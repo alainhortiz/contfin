@@ -1,0 +1,17 @@
+oTable = $('#dataExpediente').dataTable( {
+"order": [[0, "asc"],[1, "asc"]],
+"aoColumnDefs": [
+{ "sWidth": "3%", "aTargets": [ 0 ] },
+{ "sWidth": "8%", "aTargets": [ 1 ] },
+{ "sWidth": "30%", "aTargets": [ 3 ] },
+],
+} );
+{% if expedientes|length <= 0 %}
+    $('.fa-file-excel-o').on('click' , function () {
+    alertify.alert('<strong>No hay datos para exportar en esta vista.</strong>')
+    .setHeader('<span class="glyphicon glyphicon-ban-circle" style="font-size: 20px"></span>' +
+    '<h4 class="modal-title" style="display: inline-block; margin-left: 10px">Error</h4>')
+    .set('label','Aceptar');
+    return false;
+    });
+{% endif %}

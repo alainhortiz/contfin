@@ -1,0 +1,2351 @@
+{% extends 'base.html.twig' %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('easyadmin/tema/DataTables-1.10.10/media/css/jquery.dataTables.css') }}"/>
+    <link rel="stylesheet" href="{{ asset('easyadmin/plugins/multiselect/css/multi-select.css') }}"/>
+    <link rel="stylesheet" href="{{ asset('easyadmin/tema/select2/select2-bootstrap.min.css') }}"/>
+{% endblock %}
+
+{% block body %}
+    <div class="preload hidden">
+        <div class="logo"></div>
+        <div class="loader-frame">
+            <div class="loader1" id="loader1"></div>
+            <div class="loader2" id="loader2"></div>
+        </div>
+    </div>
+    <div class="container-fluid">
+        <div class="portlet light estilosForm">
+            <div class="portlet-title">
+                <div class="caption font-green">
+                    <i class="fa fa-folder-open font-green"></i>
+                    <span class="caption-subject bold uppercase">VER EXPEDIENTE</span>
+                </div>
+                <div class="caption font-green" style="margin-left: 75%">
+                    <span class="caption-subject bold uppercase">Expediente No. {{ expediente.numeroExpedienteMostrar }} </span>
+                </div>
+            </div>
+            <div class="portlet-body">
+                <ul class="nav nav-tabs nav-pills">
+                    <li class="active">
+                        <a href="#expediente" data-toggle="tab">
+                            EXPEDIENTE </a>
+                    </li>
+                    {% if expediente.mandamientopago != 1 and app.user.instancia.preorden >= expediente.estadoexpedienteinstancia.instancia.preorden and app.user.instancia.preorden != '6'%}
+                        <li>
+                            <a href="#parametrizar" data-toggle="tab">
+                                PARAMETRIZAR </a>
+                        </li>
+                    {% endif %}
+                    <li>
+                        <a href="#fichaControl" data-toggle="tab">
+                            FICHA DE CONTROL </a>
+                    </li>
+                    <li>
+                        <a href="#historico" data-toggle="tab">
+                            HISTÓRICO </a>
+                    </li>
+                    <li>
+                        <a href="#presupuesto" data-toggle="tab">
+                            PRESUPUESTO </a>
+                    </li>
+                    {% if expediente.estadoexpedienteinstancia.estadoexpediente.nombreestado != 'SIN CREDITO' and (((app.user.instancia.preorden == '3' or app.user.instancia.preorden == '4') and is_granted("ROLE_SUPERVISOR") and expediente.mandamientopago == 1 ) or (app.user.instancia.preorden == '6' and expediente.mandamientopago != 1))  %}
+                        <li>
+                            <a href="#ordenPago" data-toggle="tab">
+                                MANDAMIENTO DE PAGO </a>
+                        </li>
+                    {% endif %}
+                </ul>
+                <div class="tab-content">
+                    <div class="tab-pane fade active in" id="expediente">
+                        <form role="form" id="formActualizarExpediente" >
+                            <div class="form-body">
+                                <div class="row">
+                                    <div class="col-lg-6 col-md-6">
+                                        <div class="portlet">
+                                            <div class="col-lg-6 col-md-6 col-sm-6" style="margin-top: 20px">
+                                                <div class="form-group form-md-line-input">
+                                                    <input type="text"   class="form-control" id="estado" name="estado" disabled value="{{ expediente.estadoexpedienteinstancia.estadoexpediente.nombreestado }}">
+                                                    <label for="estado">ESTADO</label>
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-4 col-md-4 col-sm-4" style="margin-top: 55px">
+                                                <div class="md-checkbox" >
+                                                    <input type="checkbox" disabled  {{ expediente.prioridad == 1  ? 'checked' }}  class="md-check" >
+                                                    <label for="prioritario">
+                                                        <span></span>
+                                                        <span class="check"></span>
+                                                        <span class="box"></span>
+                                                        PRIORITARIO </label>
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-6 col-md-6 col-sm-6" style="margin-top: 20px">
+                                                <div class="form-group form-md-line-input">
+                                                    <input type="date"  class="form-control" id="fechaEntrada" name="fechaEntrada" disabled value="{{ expediente.fechaentrada|date('Y-m-d') }}">
+                                                    <label for="fechaEntrada">FECHA</label>
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-6 col-md-6 col-sm-6" style="margin-top: 20px">
+                                                <div class="form-group form-md-line-input input-icon right">
+                                                    <i style="color: #111111">{{ tipoMoneda }}</i>
+                                                    <input type="text"  class="form-control" id="montoSolicitado" name="montoSolicitado" disabled value="{{ expediente.importesolicitado|number_format(0, ',', '.') }}">
+                                                    <label for="montoSolicitado">MONTO SOLICITADO</label>
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-12 col-md-12 col-sm-12" style="margin-top: 20px">
+                                                <div class="form-group form-md-line-input">
+                                                    <input type="text"  class="form-control" id="resumen" name="resumen" disabled value="{{ expediente.resumen }}">
+                                                    <label for="resumen">RESUMEN</label>
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-12 col-md-12 col-sm-12" style="margin-top: 20px">
+                                                <div class="form-group form-md-line-input">
+                                                    <input type="text" class="form-control" id="administradorCredito" name="administradorCredito" disabled value="{{ expediente.seccion.nombreseccion }}">
+                                                    <label for="administradorCredito">ADMINISTRADOR DEL CRÉDITO</label>
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-12 col-md-12 col-sm-12" style="margin-top: 20px">
+                                                <div class="form-group form-md-line-input">
+                                                    <input type="text"  class="form-control" id="beneficiario" name="beneficiario" disabled value="{{ expediente.beneficiario }}">
+                                                    <label for="beneficiario">BENEFICIARIO</label>
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-12 col-md-12 col-sm-12" style="margin-top: 20px">
+                                                <div class="form-group form-md-line-input">
+                                                    <input type="text"  class="form-control" id="ubicacionArchivo" name="ubicacionArchivo" disabled value="{{ expediente.ubicacionarchivo }}">
+                                                    <label for="ubicacionArchivo">UBICACIÓN DEL ARCHIVO</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-6 col-md-6 col-sm-6" style="overflow-x:auto">
+                                        <div class="portlet"  style="margin-top: 20px">
+                                            <label for="table" style="color: #009490"><strong>PARTIDAS PRESUPUESTARIAS</strong></label>
+                                            <table id="numeracionEconomicaTabla" class="table table-hover table-bordered table-dark" style="width: 100% ; margin-top: 15px" >
+                                                <thead>
+                                                <tr>
+                                                    <th>SECCIÓN</th>
+                                                    <th>SERVICIO</th>
+                                                    <th>CAPÍTULO</th>
+                                                    <th>ARTÍCULO</th>
+                                                    <th>NUM. E</th>
+                                                    <th>MONTO</th>
+                                                </tr>
+                                                </thead>
+                                                <tbody id="tbody">
+                                                {% set I = 0 %}
+                                                {% for partida in expediente.partidas %}
+                                                    <tr data-id ="{{ I }}">
+                                                        <td>{{ partida.presupuestoservicio.servicio.seccion.codigoseccion }}</td>
+                                                        <td>{{ partida.presupuestoservicio.servicio.codigoservicio }}</td>
+                                                        <td>{{ partida.presupuestoservicio.getNumeroeconomico().capitulo.codigocapitulo  }}</td>
+                                                        <td>{{ partida.presupuestoservicio.getNumeroeconomico().articulo  }}</td>
+                                                        <td>{{ partida.presupuestoservicio.getNumeroeconomico().codigonumeroeconomico  }}</td>
+                                                        <td>{{ partida.importesolicitado|number_format(0, ',', '.')  }}</td>
+                                                    </tr>
+                                                    {% set I = I + 1 %}
+                                                {% endfor %}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        <div class="portlet"  style="margin-top: 20px">
+                                            <label for="table" style="color: #009490"><strong>REGISTROS</strong></label>
+                                            <table id="registroTabla" class="table table-hover table-bordered table-dark" style="width: 100% ; margin-top: 15px" >
+                                                <thead>
+                                                <tr>
+                                                    <th>FECHA REGISTRO</th>
+                                                    <th>ENTIDAD</th>
+                                                    <th>DEPARTAMENTO</th>
+                                                    <th>REGISTRO</th>
+                                                </tr>
+                                                </thead>
+                                                <tbody id="tbody">
+                                                {% for registro in expediente.registros %}
+                                                    <tr data-id ="{{ registro.id }}">
+                                                        <td>{{ registro.fecharegistro|date('d-m-Y') }}</td>
+                                                        <td>{{ registro.ministerio.prefijoministerio ~' '~ registro.ministerio.seccion.nombreseccion }}</td>
+                                                        <td>{{ registro.departamento }}</td>
+                                                        <td>{{ registro.numeroregistro }}</td>
+                                                    </tr>
+                                                {% endfor %}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-lg-6 col-md-6 col-sm-6" style="margin-top: 20px">
+                                        <div class="portlet">
+                                            <div class="col-lg-12 col-md-12 col-sm-12" style="margin-top: 20px">
+                                                <div class="form-group form-md-line-input  ">
+                                                    <textarea disabled class="form-control" rows="5" id="descripcion" name="descripcion">{{ expediente.descripcion }}</textarea>
+                                                    <label for="descripcion">DESCRIPCIÓN</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-6 col-md-6 col-sm-6" style="margin-top: 20px">
+                                        <div class="portlet">
+                                            <div class="col-lg-12 col-md-12 col-sm-12" style="margin-top: 20px">
+                                                <div class="form-group form-md-line-input " >
+                                                    <textarea disabled class="form-control" rows="5" id="observaciones" name="observaciones">{{ expediente.observacion }}</textarea>
+                                                    <label for="observaciones">OBSERVACIONES</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                        <div class="row" style="margin-left: 10%">
+                            <form role="form" id="formAdjuntos" ENCTYPE="multipart/form-data" method="post">
+                                <div class="form-body">
+                                    <div class="row" >
+                                        <div class="col-lg-12 col-md-12" style="margin-top: 30px">
+                                            <div class="row">
+                                                <div class="col-lg-6 col-md-6">
+                                                    <div class="form-control input-lg">
+                                                        <input class="btn-secondary" type="file" id="fichero_usuario" name="fichero_usuario">
+                                                    </div>
+                                                </div>
+                                                <div class="col-lg-6 col-md-6">
+                                                    <button type="button" class="btn btn-secondary" id="addAdjunto" disabled ><i class="icon-paper-clip"></i> Adjuntar</button>
+                                                </div>
+                                            </div>
+                                            <table id="adjuntosTabla" class="table table-hover table-bordered table-dark" style="width: 90% ; margin-top: 15px;" >
+                                                <thead>
+                                                <tr >
+                                                    <th style="font-size: 14px;">DOCUMENTOS ADJUNTOS</th>
+                                                    <th style="font-size: 14px;">ACCIÓN</th>
+                                                </tr>
+                                                </thead>
+                                                <tbody id="tbody">
+                                                {% for evidencia in expediente.evidenciasExpedientes %}
+                                                    <tr data-id ="{{ evidencia.id }}">
+                                                        <td  style="font-size: 14px"><a href="{{ vinculo~'/'~evidencia.documento.fechasubida|date('Y')~'/'~evidencia.documento.nombredocumento }}" target="_blank">{{ evidencia.documento.nombredocumento }}</a></td>
+                                                        <td>
+                                                        </td>
+                                                    </tr>
+                                                {% endfor %}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    {% if expediente.mandamientopago != 1 and app.user.instancia.preorden >= expediente.estadoexpedienteinstancia.instancia.preorden and app.user.instancia.preorden != '6' %}
+                        <div class="tab-pane fade" id="parametrizar">
+                            <form role="form" id="formParametrizarExpediente">
+                                <div class="form-body">
+                                    <div class="row">
+                                        <div class="col-lg-6 col-md-6">
+                                            <div class="portlet">
+                                                <div class="col-lg-6 col-md-6 col-sm-6" style="margin-top: 45px">
+                                                    <div class="form-group form-md-line-input">
+                                                        <input type="text"   class="form-control" id="estado" name="estado" disabled value="{{ expediente.estadoexpedienteinstancia.estadoexpediente.nombreestado }}">
+                                                        <label for="estado">ESTADO</label>
+                                                    </div>
+                                                </div>
+                                                <div class="col-lg-6 col-md-6 col-sm-6" style="margin-top: 80px">
+                                                    <div class="md-checkbox" >
+                                                        <input type="checkbox"  id="prioritario" {{ expediente.prioridad == 1  ? 'checked' }}  class="md-check" >
+                                                        <label for="prioritario">
+                                                            <span></span>
+                                                            <span class="check"></span>
+                                                            <span class="box"></span>
+                                                            PRIORITARIO </label>
+                                                    </div>
+                                                </div>
+                                                <div class="col-lg-6 col-md-6 col-sm-6" style="margin-top: 20px">
+                                                    <div class="form-group form-md-line-input input-icon right">
+                                                        <i style="color: #111111">{{ tipoMoneda }}</i>
+                                                        <input type="text"  class="form-control" id="montoSolicitado" name="montoSolicitado" disabled value="{{ expediente.importesolicitado|number_format(0, ',', '.') }}">
+                                                        <label for="montoSolicitado">MONTO SOLICITADO</label>
+                                                    </div>
+                                                </div>
+                                                <div class="col-lg-6 col-md-6 col-sm-6" style="margin-top: 20px">
+                                                    <div class="form-group form-md-line-input  input-icon right">
+                                                        <i style="color: #111111">{{ tipoMoneda }}</i>
+                                                        {% set parametrizaciones = expediente.parametrizaciones %}
+                                                        {% set montoApagar = expediente.importesolicitado %}
+                                                        {% if parametrizaciones|length != 0 %}
+                                                            {% set montoApagar = parametrizaciones[parametrizaciones|length-1].montoapagar %}
+                                                        {% endif %}
+                                                        <input type="text" disabled class="form-control" id="montoAPagar" name="montoAPagar"  value="{{ montoApagar|number_format(0, ',', '.') }}">
+                                                        <label for="montoAPagar">MONTO A PAGAR</label>
+                                                    </div>
+                                                </div>
+                                                <div class="col-lg-12 col-md-12 col-sm-12" style="margin-top: 30px">
+                                                    <div  style="border-top: none">
+                                                        <div class="form-group">
+                                                            <label class="control-label " for="parametros"><strong>SELECCIONE PARAMETROS:</strong></label>
+                                                            <select multiple="multiple" id="parametros" name="parametros" class="form-control" style="width: 100%">
+
+                                                                {% for parametro in parametrosInstancia %}
+                                                                    {% if parametrizacion == null  %}
+
+                                                                        <option  value={{ parametro.id }}>{{ parametro.parametro.nombreparametro }}</option>
+
+                                                                    {% else  %}
+                                                                        {% if not ( parametro in parametrizacion.parametros) %}
+
+                                                                            <option  value={{ parametro.id }}>{{ parametro.parametro.nombreparametro }}</option>
+
+                                                                        {% else  %}
+                                                                            <option class="misParametros"  value={{ parametro.id }}>{{ parametro.parametro.nombreparametro }}</option>
+
+                                                                        {% endif %}
+                                                                    {% endif %}
+                                                                {% endfor %}
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-6 col-md-6 col-sm-6" style="overflow-x:auto">
+                                            <div class="portlet"  style="margin-top: 20px">
+                                                <label for="table" style="color: #009490"><strong>PARTIDAS PRESUPUESTARIAS</strong></label>
+                                                {% if  app.user.instancia.preorden > 1 and app.user.instancia.preorden != '6' and  app.user.instancia.preorden >= expediente.estadoexpedienteinstancia.instancia.preorden or is_granted("ROLE_SUPERUSUARIO") %}
+                                                    <div class="row">
+                                                        <div class="col-lg-3 col-md-3 col-sm-3">
+                                                            <div class="form-group" style="margin-top: 2px">
+                                                                <label for="servicio">SERVICIO</label>
+                                                                <select class="form-control" id="servicio" name="servicio" style="width: 100%">
+                                                                    <option id="inicio" value=""></option>
+                                                                    {% for servicio in  servicios %}
+                                                                        <option class="cambioServicio" value="{{ servicio.id }}">{{ servicio.getSeccion().codigoseccion~servicio.codigoservicio ~' - '~ servicio.nombreservicio  }}</option>
+                                                                    {% endfor %}
+                                                                </select>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-lg-5 col-md-5 col-sm-5">
+                                                            <div class="form-group " style="margin-top: 2px">
+                                                                <label for="numeroEconomico">NÚMERO ECONÓMICO</label>
+                                                                <select class="form-control " disabled id="numeroEconomico" name="numeroEconomico" style="width: 100%">
+                                                                    <option value="" id="inicio2"></option>
+                                                                </select>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-lg-3 col-md-3 col-sm-3">
+                                                            <div class="form-group form-md-line-input form-md-floating-label  input-icon right">
+                                                                <i style="color: #111111">{{ tipoMoneda }}</i>
+                                                                <input type="text" onkeypress="return filterFloat(event,this);"  class="form-control" id="montoPartida" name="montoPartida">
+                                                                <label for="montoPartida">MONTO</label>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-lg-1 col-md-1 col-sm-1">
+                                                            <span id="addNumeracionEconomicaParmetrizar" class="fa fa-plus-square fa-2x" style="color: #009490 ; margin-top: 30px" data-toggle="tooltip" data-placement="top" title="Agregar Numeración"></span>
+                                                        </div>
+                                                    </div>
+                                                {% endif %}
+                                                <table id="numeracionEconomicaTablaParametrizar" class="table table-hover table-bordered table-dark" style="width: 100% ; margin-top: 15px" >
+                                                    <thead>
+                                                    <tr>
+                                                        <th>SECCIÓN</th>
+                                                        <th>SERVICIO</th>
+                                                        <th>CAPÍTULO</th>
+                                                        <th>ARTÍCULO</th>
+                                                        <th>NUM. E</th>
+                                                        <th>MONTO</th>
+                                                        {% if app.user.instancia.preorden != '1' %}
+                                                        <th>ACCIÓN</th>
+                                                        {% endif %}
+                                                    </tr>
+                                                    </thead>
+                                                    <tbody id="tbody">
+                                                    {% set I = 0 %}
+                                                    {% for partida in expediente.partidas %}
+                                                        <tr data-id ="{{ I }}">
+                                                            <td>{{ partida.presupuestoservicio.servicio.seccion.codigoseccion }}</td>
+                                                            <td>{{ partida.presupuestoservicio.servicio.codigoservicio }}</td>
+                                                            <td>{{ partida.presupuestoservicio.getNumeroeconomico().capitulo.codigocapitulo  }}</td>
+                                                            <td>{{ partida.presupuestoservicio.getNumeroeconomico().articulo  }}</td>
+                                                            <td>{{ partida.presupuestoservicio.getNumeroeconomico().codigonumeroeconomico  }}</td>
+                                                            <td>{{ partida.importesolicitado|number_format(0, ',', '.')  }}</td>
+                                                            {% if app.user.instancia.preorden != '1' %}
+                                                                <td><a href="#" data-toggle="tooltip" data-placement="top" title="Eliminar Partida"><i class="glyphicon glyphicon-trash delete" style="color: red" ></i></a></td>
+                                                            {% endif %}
+                                                        </tr>
+                                                        {% set I = I + 1 %}
+                                                    {% endfor %}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                            <div class="col-lg-12 col-md-12 col-sm-12" style="margin-top: 20px">
+                                                {% if parametrizacion == null %}
+                                                    <div class="form-group form-md-line-input  form-md-floating-label input-icon right">
+                                                        <i style="color: #dc141b" class="fa fa-exclamation tooltips hidden  dictamen" data-placement="bottom" data-original-title="Este campo es obligatorio" ></i>
+                                                        <textarea class="form-control" rows="10" id="dictamen" name="dictamen">{{ parametrizacion != null ? parametrizacion.observacion : '' }}</textarea>
+                                                        <label for="dictamen">DICTAMEN</label>
+                                                    </div>
+                                                {% else %}
+                                                    <div class="form-group form-md-line-input  {{ parametrizacion.observacion == '' ? 'form-md-floating-label' : '' }} input-icon right">
+                                                        <i style="color: #dc141b" class="fa fa-exclamation tooltips hidden  dictamen" data-placement="bottom" data-original-title="Este campo es obligatorio" ></i>
+                                                        <textarea class="form-control" rows="10" id="dictamen" name="dictamen">{{ parametrizacion != null ? parametrizacion.observacion : '' }}</textarea>
+                                                        <label for="dictamen">DICTAMEN</label>
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    {% endif %}
+                    <div class="tab-pane fade" id="fichaControl">
+                        <div class="portlet-body form">
+                            <form role="form">
+                                <div class="form-body">
+                                    <div class="row">
+                                        <div class="col-lg-12 col-md-12 col-sm-12">
+                                            <div class="form-group form-md-line-input">
+                                                <select class="form-control" id="partidasExpediente"
+                                                        name="partidasExpediente">
+                                                    {% for partida in  expediente.partidas %}
+                                                        <option value="{{ partida.presupuestoservicio.id }}">{{ partida.presupuestoservicio.servicio.seccion.codigoseccion~partida.presupuestoservicio.servicio.codigoservicio~' - '~partida.presupuestoservicio.servicio.nombreservicio~' - '~partida.presupuestoservicio.numeroeconomico.codigonumeroeconomico~' - '~partida.presupuestoservicio.numeroeconomico.nombrenumeroeconomico~' - Monto: '~(partida.importesolicitado/1000)|number_format(0, ',', '.')}}</option>
+                                                    {% endfor %}
+                                                </select>
+                                                <label for="partidasExpediente">PARTIDA PRESUPUESTARIA</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-12 col-md-12 col-sm-12">
+                                            <div class="caption font-green" style="font-size: 19px; margin-top: 20px">
+                                                <span class="caption-subject bold uppercase">
+                                                    {% for partida in  expediente.partidas %}
+                                                        {% if (loop.index == 1) %}
+                                                            <div id="divPresupuesto" class="col-lg-3 col-md-3 col-sm-3" {{ partida.presupuestoservicio.presupuestounitario < 0 ? 'style="color: red"'}}>
+                                                                 Presupuesto: {{ (partida.presupuestoservicio.presupuestounitario/1000)|number_format(0, ',', '.')~' '~tipoMoneda }}
+                                                            </div>
+                                                            {% set disponibilidad = partida.presupuestoservicio.presupuestounitario - partida.presupuestoservicio.valordisponible %}
+                                                            <div id="divDisponibilidad" class="col-lg-3 col-md-3 col-sm-3" {{ disponibilidad < 0 ? 'style="color: red"'}}>
+                                                                 Disponibilidad: {{ (disponibilidad/1000)|number_format(0, ',', '.')~' '~tipoMoneda }}
+                                                            </div>
+                                                            <div id="divCompromiso" class="col-lg-3 col-md-3 col-sm-3" {{ partida.presupuestoservicio.valorejecutado < 0 ? 'style="color: red"'}}>
+                                                                Compromiso: {{ (partida.presupuestoservicio.valorejecutado/1000)|number_format(0, ',', '.')~' '~tipoMoneda }}
+                                                            </div>
+                                                            {% set liquidez =  partida.presupuestoservicio.presupuestounitario - partida.presupuestoservicio.valorejecutado%}
+                                                            <div id="divLiquidez" class="col-lg-3 col-md-3 col-sm-3" {{ liquidez < 0 ? 'style="color: red"'}}>
+                                                                Liquidez: {{ (liquidez/1000)|number_format(0, ',', '.')~' '~tipoMoneda }}
+                                                            </div>
+                                                        {% endif %}
+                                                    {% endfor %}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="row" id="containerResultado" style="margin-top: 40px">
+                            <div class="col-md-12">
+                                <div class="portlet box grey-cascade">
+                                    <div class="portlet-title" style="background-color: #2b3643">
+                                        <div class="caption">
+                                            <i class="fa fa-table"></i>
+                                        </div>
+                                        <div class="caption" style="float: right">
+                                            <span>en miles de {{ tipoMoneda }}</span>
+                                        </div>
+                                    </div>
+                                    <div class="portlet-body " style="background-color: #afbac0 ; overflow-x: auto">
+                                        <table class="table table-striped table-bordered table-hover table-responsive myDataTable"
+                                               id="dataFichaControl">
+                                            <thead>
+                                            <tr>
+                                                <th>
+                                                    Fecha
+                                                </th>
+                                                <th>
+                                                    No Expediente
+                                                </th>
+                                                <th>
+                                                    Beneficiario
+                                                </th>
+                                                <th>
+                                                    Administrador del Crédito
+                                                </th>
+                                                <th>
+                                                    Monto
+                                                </th>
+                                                <th>
+                                                    Estado
+                                                </th>
+                                            </tr>
+                                            </thead>
+                                            <tbody>
+                                            {% for expedienteFichaControl in expedientesFichaControl %}
+                                                <tr data-id="{{ expedienteFichaControl.id }}">
+                                                    <td>{{ expedienteFichaControl.fechaEntrada|date('Y-m-d') }}</td>
+                                                    <td>{{ expedienteFichaControl.getNumeroExpedienteMostrar }}</td>
+                                                    <td>{{ expedienteFichaControl.beneficiario }}</td>
+                                                    <td>{{ expedienteFichaControl.getSeccion.nombreseccion }}</td>
+                                                    {% set idPartida = expedienteFichaControl.partidas[0].id %}
+                                                    {% for partida in expedienteFichaControl.partidas if partida.id == idPartida %}
+                                                        <td>{{ (partida.importesolicitado/1000)|number_format(0, ',', '.')~' '~tipoMoneda }}</td>
+                                                    {% endfor %}
+                                                    <td>{{ expedienteFichaControl.getEstadoexpedienteinstancia().getEstadoexpediente().nombreestado }}</td>
+                                                </tr>
+                                            {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tab-pane fade" id="historico">
+                        <div class="row">
+                            <div class="col-lg-6 col-md-6 col-sm-6">
+                                <div class="portlet"  style="margin-top: 20px">
+                                    <table id="dataHistorico" class="table table-hover table-bordered table-dark" style="width: 100% ; margin-top: 15px" >
+                                        <thead>
+                                        <tr>
+                                            <th>FECHA</th>
+                                            <th>INSTANCIA</th>
+                                            <th>ESTADO</th>
+                                            <th>USUARIO</th>
+                                            <th></th>
+                                        </tr>
+                                        </thead>
+                                        <tbody id="tbody">
+                                        {% for historico in expediente.historicosEstados %}
+                                            <tr data-id ="{{ historico.id }}">
+                                                <td>{{ historico.fecha|date('Y-m-d') }}</td>
+                                                <td>{{ historico.estado.instancia.nombreinstancia }}</td>
+                                                <td>{{ historico.estado.estadoexpediente.nombreestado }}</td>
+                                                <td>{{ historico.usuario.persona.nombres~' '~historico.usuario.persona.apellido1~' '~historico.usuario.persona.apellido2 }}</td>
+                                                <td class="text-center"><i class="fa fa-file-text fa-2x tocar" {{ loop.first ? 'style="color: #009490"' : '' }}></i></td>
+                                            </tr>
+                                        {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="col-lg-6 col-md-6 col-sm-6">
+                                {% for historico in expediente.historicosEstados %}
+                                    <div id="portlet{{ historico.id }}" class="portlet {{ loop.first ? 'activo' : 'hidden' }}"  style="margin-top: 20px">
+                                        <section class="section-gray">
+                                            <div class="row" style="margin-left: 5px ; margin-bottom: 15px ; margin-top: 5px">
+                                                <div class="col-lg-4 col-md-4 col-sm-4">
+                                                    <h6 style="color: #009490"><i class="fa fa-file-text fa-2x"></i><strong style="font-size: 18px ; margin-left: 10px">PARAMETROS</strong></h6>
+                                                </div>
+                                            </div>
+                                            {% if historico.estado.estadoexpediente.nombreestado == 'DESESTIMADO' or historico.estado.estadoexpediente.nombreestado == 'APROBADO' %}
+                                                {% for parametrizacion in expediente.parametrizaciones if parametrizacion.instancia.id == historico.estado.instancia.id %}
+                                                    <div class="row" style="margin-left: 5px ; margin-right: 5px ">
+                                                        <div class="col-lg-12 col-md-12 col-sm-12">
+                                                            <table  class="table table-hover table-bordered " style="width: 100% ;background-color: white" >
+                                                                <thead>
+                                                                </thead>
+                                                                <tbody id="tbody">
+                                                                {% for parametroInstancia in parametrizacion.parametros%}
+                                                                    <tr data-id ="{{ I }}">
+                                                                        <td>{{ parametroInstancia.parametro.nombreparametro }}</td>
+                                                                    </tr>
+                                                                {% endfor %}
+                                                                </tbody>
+                                                            </table>
+                                                        </div>
+                                                    </div>
+                                                {% endfor %}
+                                            {% endif %}
+                                            <div class="row" style="margin-left: 5px ; margin-bottom: 15px ; margin-top: 5px">
+                                                <div class="col-lg-4 col-md-4 col-sm-4">
+                                                    <h6 style="color: #009490"><i class="fa fa-file-text fa-2x"></i><strong style="font-size: 18px ; margin-left: 10px">DICTAMEN</strong></h6>
+                                                </div>
+                                            </div>
+                                            {% if historico.estado.estadoexpediente.nombreestado == 'DESESTIMADO' or historico.estado.estadoexpediente.nombreestado == 'APROBADO' %}
+                                                {% for parametrizacion in expediente.parametrizaciones if parametrizacion.instancia.id == historico.estado.instancia.id %}
+                                                        <div class="row" style="margin-left: 5px ; margin-right: 5px ; margin-bottom: 15px">
+                                                            <div class="col-lg-12 col-md-12 col-sm-12">
+                                                                <p>{{ parametrizacion.observacion }}</p>
+                                                            </div>
+                                                        </div>
+                                                {% endfor %}
+                                            {% endif %}
+                                        </section>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tab-pane fade" id="presupuesto">
+                        <div class="portlet-body form">
+                            <form role="form">
+                                <div class="form-body">
+                                    <div class="row">
+                                        <div class="col-lg-12 col-md-12 col-sm-12">
+                                            <div class="form-group form-md-line-input">
+                                                <select class="form-control" id="secciones"
+                                                        name="partidasExpediente">
+                                                    {% for seccion in  secciones %}
+                                                        <option value="{{ seccion.id }}">{{ seccion.codigoseccion~' - '~seccion.nombreseccion }}</option>
+                                                    {% endfor %}
+                                                </select>
+                                                <label for="secciones">SECCION</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-12 col-md-12 col-sm-12">
+                                            <div class="caption font-green" style="font-size: 19px; margin-top: 20px">
+                                                <span class="caption-subject bold uppercase">
+                                                    {% for presupuesto in  presupuestosSecciones %}
+                                                        {% if (loop.index == 1) %}
+                                                            <div id="divPresupuestoSeccion" class="col-lg-3 col-md-3 col-sm-3" {{ presupuesto['Presupuesto'] < 0 ? 'style="color: red"'}}>
+                                                                 Presupuesto: {{ presupuesto['Presupuesto']|number_format(0, ',', '.')~' '~tipoMoneda }}
+                                                            </div>
+                                                            <div id="divDisponibilidadSeccion" class="col-lg-3 col-md-3 col-sm-3" {{  presupuesto['Disponibilidad'] < 0 ? 'style="color: red"'}}>
+                                                                 Disponibilidad: {{ presupuesto['Disponibilidad']|number_format(0, ',', '.')~' '~tipoMoneda }}
+                                                            </div>
+                                                            <div id="divCompromisoSeccion" class="col-lg-3 col-md-3 col-sm-3" {{  presupuesto['Compromiso'] < 0 ? 'style="color: red"'}}>
+                                                                 Compromiso: {{ presupuesto['Compromiso']|number_format(0, ',', '.')~' '~tipoMoneda }}
+                                                            </div>
+                                                            <div id="divLiquidezSeccion" class="col-lg-3 col-md-3 col-sm-3" {{ presupuesto['Liquidez'] < 0 ? 'style="color: red"'}}>
+                                                                Liquidez: {{ presupuesto['Liquidez']|number_format(0, ',', '.')~' '~tipoMoneda }}
+                                                            </div>
+                                                        {% endif %}
+                                                    {% endfor %}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="row" id="containerPresupuesto" style="margin-top: 40px">
+                            <div class="col-md-12">
+                                <div class="portlet box grey-cascade">
+                                    <div class="portlet-title" style="background-color: #2b3643">
+                                        <div class="caption">
+                                            <i class="fa fa-table"></i>
+                                        </div>
+                                        <div class="caption" style="float: right">
+                                            <span>en miles {{ tipoMoneda }}</span>
+                                        </div>
+                                        <div class="caption font-green" style="float: right ; margin-top: -50px; margin-right: -113px">
+                                            <a href="{{  path('exportarDisponibilidadLeyDePresupuesto', {idSeccion: secciones[0].id}) }}" class="fa fa-file-excel-o fa-2x font-green" data-toggle="tooltip" data-placement="left" title="Exportar a Excel"></a>
+                                        </div>
+                                    </div>
+                                    <div class="portlet-body " style="background-color: #afbac0 ; overflow-x: auto">
+                                        <table class="table table-striped table-bordered table-hover table-responsive myDataTable"
+                                               id="dataPresupuestoNeSeccion">
+                                            <thead>
+                                            <tr>
+                                                <th>
+                                                    Código NE
+                                                </th>
+                                                <th>
+                                                    Nombre NE
+                                                </th>
+                                                <th>
+                                                    Presupuesto
+                                                </th>
+                                                <th>
+                                                    Disponibilidad
+                                                </th>
+                                                <th>
+                                                    Lquidez
+                                                </th>
+                                            </tr>
+                                            </thead>
+                                            <tbody>
+                                            {% for presupuesto in presupuestosNeSeccion %}
+                                                <tr>
+                                                    <td>{{ presupuesto['codigonumeroeconomico'] }}</td>
+                                                    <td>{{ presupuesto['nombrenumeroeconomico'] }}</td>
+                                                    <td style="text-align: right">{{ presupuesto['Presupuesto']|number_format(0, ',', '.')~' '~tipoMoneda  }}</td>
+                                                    <td style="text-align: right">{{ presupuesto['Disponibilidad']|number_format(0, ',', '.')~' '~tipoMoneda  }}</td>
+                                                    <td style="text-align: right">{{ presupuesto['Liquidez']|number_format(0, ',', '.')~' '~tipoMoneda  }}</td>
+                                                </tr>
+                                            {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% if expediente.estadoexpedienteinstancia.estadoexpediente.nombreestado != 'SIN CREDITO' and (((app.user.instancia.preorden == '3' or app.user.instancia.preorden == '4') and is_granted("ROLE_SUPERVISOR") and expediente.mandamientopago == 1 ) or (app.user.instancia.preorden == '6' and expediente.mandamientopago != 1))  %}
+                        <div class="tab-pane fade" id="ordenPago">
+                            <form role="form" id="formOrdenPago">
+                                <div class="form-body">
+                                    <div class="row">
+                                        <div class="col-lg-6 col-md-6">
+                                            <div class="portlet">
+                                                <div class="col-lg-12 col-md-12 col-sm-12" style="margin-top: 55px">
+                                                    <div class="md-checkbox" >
+                                                        {% if expediente.mandamientopago == 1 %}
+                                                            <input type="checkbox" id="pagoDirecto" {{ expediente.pagodirecto == 1  ? 'checked' }} disabled  class="md-check">
+                                                        {% else %}
+                                                            <input type="checkbox" id="pagoDirecto"  class="md-check">
+                                                        {% endif %}
+                                                        <label for="pagoDirecto">
+                                                            <span></span>
+                                                            <span class="check"></span>
+                                                            <span class="box"></span>
+                                                            PAGO ANTICIPADO </label>
+                                                    </div>
+                                                </div>
+                                                <div class="col-lg-6 col-md-6 col-sm-6" style="margin-top: 20px">
+                                                    <div class="form-group form-md-line-input">
+                                                        <input type="text"   class="form-control" id="estado" name="estado" disabled value="{{ expediente.estadoexpedienteinstancia.estadoexpediente.nombreestado }}">
+                                                        <label for="estado">ESTADO</label>
+                                                    </div>
+                                                </div>
+                                                <div class="col-lg-6 col-md-6 col-sm-6" style="margin-top: 20px">
+                                                    <div class="form-group form-md-line-input  input-icon right">
+                                                        <i style="color: #111111">{{ tipoMoneda }}</i>
+                                                        {% set parametrizaciones = expediente.parametrizaciones %}
+                                                        {% set importeApagar = expediente.importesolicitado %}
+                                                        {% if parametrizaciones|length != 0 %}
+                                                            {% set importeApagar = parametrizaciones[parametrizaciones|length-1].montoapagar %}
+                                                        {% endif %}
+                                                        {% if expediente.mandamientopago == 1 and expediente.mandamientosPagos|length != 0 %}
+                                                            {% set mandamientos = expediente.mandamientosPagos %}
+                                                            {% set importeApagar = mandamientos[mandamientos|length-1].importemandamientopago %}
+                                                        {% endif %}
+                                                        <input type="text" disabled class="form-control" id="importeAPagar" name="importeAPagar"  value="{{ importeApagar|number_format(0, ',', '.') }}">
+                                                        <label for="importeAPagar">MONTO A PAGAR</label>
+                                                    </div>
+                                                </div>
+                                                <div class="col-lg-6 col-md-6 col-sm-6" style="margin-top: 20px">
+                                                    <div class="form-group form-md-line-input {{ expediente.mandamientopago != 1 ? 'form-md-floating-label input-icon right'}}">
+                                                        <i style="color: #dc141b" class="fa fa-exclamation tooltips hidden  numeroMandamientoPago" data-placement="bottom" data-original-title="Este campo es obligatorio" ></i>
+                                                        {% if expediente.mandamientopago == 1 and expediente.mandamientosPagos|length != 0 %}
+                                                            <input type="text"  class="form-control" id="numeroMandamientoPago" name="numeroMandamientoPago" disabled value="{{ mandamientos[mandamientos|length-1].numeromandamientopago }}">
+                                                        {% else %}
+                                                            <input type="text"  class="form-control" id="numeroMandamientoPago" name="numeroMandamientoPago" >
+                                                        {% endif %}
+                                                        <label for="numeroMandamientoPago">NUMERO DE PAGO</label>
+                                                    </div>
+                                                </div>
+                                                <div class="col-lg-6 col-md-6 col-sm-6" style="margin-top: 20px">
+                                                    <div class="form-group form-md-line-input  {{ expediente.mandamientopago != 1 ? 'input-icon right'}}">
+                                                        <i style="color: #dc141b" class="fa fa-exclamation tooltips hidden  fechaMandamientoPago" data-placement="bottom" data-original-title="Este campo es obligatorio" ></i>
+                                                        {% if expediente.mandamientopago == 1 and expediente.mandamientosPagos|length != 0%}
+                                                            <input type="date"  class="form-control" id="fechaMandamientoPago" name="fechaMandamientoPago" disabled value="{{ mandamientos[mandamientos|length-1].fechamandamientopago|date('Y-m-d') }}">
+                                                        {% else %}
+                                                            <input type="date"  class="form-control" id="fechaMandamientoPago" name="fechaMandamientoPago">
+                                                        {% endif %}
+                                                        <label for="fechaMandamientoPago">FECHA DE MANDAMIENTO DE PAGO</label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-6 col-md-6 col-sm-6" style="overflow-x:auto">
+                                            <div class="portlet"  style="margin-top: 20px">
+                                                <label for="table" style="color: #009490"><strong>PARTIDAS PRESUPUESTARIAS</strong></label>
+                                                {% if  app.user.instancia.preorden >= 3   and expediente.estadoexpedienteinstancia.estadoexpediente.nombreestado != 'SIN CREDITO' and  app.user.instancia.preorden >= expediente.estadoexpedienteinstancia.instancia.preorden or is_granted("ROLE_SUPERUSUARIO") %}
+                                                    {%  if  not (app.user.instancia.preorden == '6' and expediente.mandamientopago  == 1) %}
+                                                        <div class="row">
+                                                            <div class="col-lg-3 col-md-3 col-sm-3">
+                                                                <div class="form-group" style="margin-top: 2px">
+                                                                    <label for="servicio">SERVICIO</label>
+                                                                    <select class="form-control" id="servicio" name="servicio" style="width: 100%">
+                                                                        <option id="inicio" value=""></option>
+                                                                        {% for servicio in  servicios %}
+                                                                            <option class="cambioServicio" value="{{ servicio.id }}">{{ servicio.getSeccion().codigoseccion~servicio.codigoservicio ~' - '~ servicio.nombreservicio  }}</option>
+                                                                        {% endfor %}
+                                                                    </select>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-lg-5 col-md-5 col-sm-5">
+                                                                <div class="form-group " style="margin-top: 2px">
+                                                                    <label for="numeroEconomico">NÚMERO ECONÓMICO</label>
+                                                                    <select class="form-control " disabled id="numeroEconomico" name="numeroEconomico" style="width: 100%">
+                                                                        <option value="" id="inicio2"></option>
+                                                                    </select>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-lg-3 col-md-3 col-sm-3">
+                                                                <div class="form-group form-md-line-input form-md-floating-label  input-icon right">
+                                                                    <i style="color: #111111">{{ tipoMoneda }}</i>
+                                                                    <input type="text" onkeypress="return filterFloat(event,this);"  class="form-control" id="montoPartida" name="montoPartida">
+                                                                    <label for="montoPartida">MONTO</label>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-lg-1 col-md-1 col-sm-1">
+                                                                <span id="addNumeracionEconomicaOrdenPago" class="fa fa-plus-square fa-2x" style="color: #009490 ; margin-top: 30px" data-toggle="tooltip" data-placement="top" title="Agregar Numeración"></span>
+                                                            </div>
+                                                        </div>
+                                                    {% endif %}
+                                                {% endif %}
+                                                <table id="numeracionEconomicaTablaOrdenPago" class="table table-hover table-bordered table-dark" style="width: 100% ; margin-top: 15px" >
+                                                    <thead>
+                                                    <tr>
+                                                        <th>SECCIÓN</th>
+                                                        <th>SERVICIO</th>
+                                                        <th>CAPÍTULO</th>
+                                                        <th>ARTÍCULO</th>
+                                                        <th>NUM. E</th>
+                                                        <th>MONTO</th>
+                                                        <th>ACCIÓN</th>
+                                                    </tr>
+                                                    </thead>
+                                                    <tbody id="tbody">
+                                                    {% set I = 0 %}
+                                                    {% for partida in expediente.partidas %}
+                                                        <tr data-id ="{{ I }}">
+                                                            <td>{{ partida.presupuestoservicio.servicio.seccion.codigoseccion }}</td>
+                                                            <td>{{ partida.presupuestoservicio.servicio.codigoservicio }}</td>
+                                                            <td>{{ partida.presupuestoservicio.getNumeroeconomico().capitulo.codigocapitulo  }}</td>
+                                                            <td>{{ partida.presupuestoservicio.getNumeroeconomico().articulo  }}</td>
+                                                            <td>{{ partida.presupuestoservicio.getNumeroeconomico().codigonumeroeconomico  }}</td>
+                                                            <td>{{ partida.importesolicitado|number_format(0, ',', '.')  }}</td>
+                                                            <td><a href="#" data-toggle="tooltip" data-placement="top" title="Eliminar Partida"><i class="glyphicon glyphicon-trash delete" style="color: red" ></i></a></td>
+                                                        </tr>
+                                                        {% set I = I + 1 %}
+                                                    {% endfor %}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                            <div class="portlet"  style="margin-top: 20px">
+                                                <label for="table" style="color: #009490"><strong>REGISTROS</strong></label>
+                                                <table id="registroTabla" class="table table-hover table-bordered table-dark" style="width: 100% ; margin-top: 15px" >
+                                                    <thead>
+                                                    <tr>
+                                                        <th>FECHA REGISTRO</th>
+                                                        <th>ENTIDAD</th>
+                                                        <th>DEPARTAMENTO</th>
+                                                        <th>REGISTRO</th>
+                                                    </tr>
+                                                    </thead>
+                                                    <tbody id="tbody">
+                                                    {% for registro in expediente.registros %}
+                                                        <tr data-id ="{{ registro.id }}">
+                                                            <td>{{ registro.fecharegistro|date('d-m-Y') }}</td>
+                                                            <td>{{ registro.ministerio.prefijoministerio ~' '~ registro.ministerio.seccion.nombreseccion }}</td>
+                                                            <td>{{ registro.departamento }}</td>
+                                                            <td>{{ registro.numeroregistro }}</td>
+                                                        </tr>
+                                                    {% endfor %}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-lg-6 col-md-6 col-sm-6" style="margin-top: 20px">
+                                            <div class="portlet">
+                                                <div class="col-lg-12 col-md-12 col-sm-12" style="margin-top: 20px">
+                                                    <div class="form-group form-md-line-input  ">
+                                                        <textarea disabled class="form-control" rows="5" id="descripcion" name="descripcion">{{ expediente.descripcion }}</textarea>
+                                                        <label for="descripcion">DESCRIPCIÓN</label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-6 col-md-6 col-sm-6" style="margin-top: 20px">
+                                            <div class="portlet">
+                                                <div class="col-lg-12 col-md-12 col-sm-12" style="margin-top: 20px">
+                                                    <div class="form-group form-md-line-input " >
+                                                        <textarea disabled class="form-control" rows="5" id="observaciones" name="observaciones">{{ expediente.observacion }}</textarea>
+                                                        <label for="observaciones">OBSERVACIONES</label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="clearfix margin-bottom-20">
+                </div>
+                <div class="form-actions noborder" style="margin-top: 20px">
+                    {% if app.user.instancia.preorden >= expediente.estadoexpedienteinstancia.instancia.preorden and expediente.activo == 1 %}
+                        {% if  expediente.mandamientopago != 1  and app.user.instancia.preorden != '6'%}
+                            {% if expediente.usuario.id == app.user.id and is_granted("ROLE_PROCESADOR") and expediente.estadoexpedienteinstancia.estadoexpediente.nombreestado != 'DESESTIMADO' and expediente.estadoexpedienteinstancia.estadoexpediente.nombreestado != 'SIN CREDITO' %}
+                                {% if app.user.instancia.preorden == expediente.estadoexpedienteinstancia.instancia.preorden %}
+                                    <button type="button" class="btn btn-secondary" id="btnActualizar">Actualizar</button>
+                                    <a href="{{ path('terminarExpediente' , { idExpediente:expediente.id , ruta:ruta } ) }}"  class="btn miAhref" id="btnTerminado">Terminado</a>
+                                {% endif %}
+                            {% endif %}
+                            {% if app.user.instancia.preorden == expediente.estadoexpedienteinstancia.instancia.preorden and expediente.estadoexpedienteinstancia.estadoexpediente.nombreestado == 'EN PROCESO' %}
+                                {% if (expediente.usuario.id == app.user.id and is_granted("ROLE_PROCESADOR"))  or is_granted("ROLE_SUPERVISOR") %}
+                                    <a href="{{ path('liberarExpediente' , { idExpediente:expediente.id , ruta:ruta } ) }}"  class="btn miAhref" id="btnLiberar">Liberar</a>
+                                {% endif %}
+                            {% endif %}
+                        {% endif %}
+                        {% if  is_granted("ROLE_SUPERVISOR") and expediente.mandamientopago != 1 and  app.user.instancia.preorden != '6'  %}
+                            <button type="button" class="btn btn-secondary" id="btnAprobar">Aprobar</button>
+                            <button type="button" class="btn btn-secondary" {{ expediente.estadoexpedienteinstancia.estadoexpediente.nombreestado == 'DESESTIMADO' ? 'disabled' }} id="btnDesestimar">Desestimar</button>
+                        {% endif %}
+                        {% if  (app.user.instancia.preorden == '6' and is_granted("ROLE_PAGADOR") and expediente.mandamientopago != 1)  %}
+                            {% if not (expediente.estadoexpedienteinstancia.estadoexpediente.nombreestado == 'PAGO APROBADO' and expediente.estadoexpedienteinstancia.instancia.preorden == '4') %}
+                                <button type="button"  class="btn btn-secondary" id="btnGuardarMandamientoPago">Insertar Mandamiento de Pago</button>
+                            {% endif %}
+                        {% endif %}
+                        {% if  (is_granted("ROLE_SUPERVISOR") and  expediente.mandamientopago == 1 and app.user.instancia.preorden != '6') %}
+                            {% if   app.user.instancia.preorden == '3' or app.user.instancia.preorden == '4' %}
+                                {% if expediente.estadoexpedienteinstancia.estadoexpediente.nombreestado == 'POR PAGAR'   %}
+                                    <button type="button" class="btn btn-secondary" id="btnAprobarMandamientoPago">Aprobar Mandamiento de Pago</button>
+                                    <button type="button" class="btn btn-secondary" {{ expediente.estadoexpedienteinstancia.estadoexpediente.nombreestado == 'PAGO DESESTIMADO' ? 'disabled' }} id="btnDesestimarMandamientoPago">Desestimar Mandamiento de Pago</button>
+                                {% endif %}
+                            {% endif %}
+                        {% endif %}
+                    {% endif %}
+                    <button type="button" class="btn btn-secondary salir" >Cancelar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+{% block javascripts %}
+    {{ include('Expediente/modalPartidasSobregiradasExpediente.htm.twig') }}
+    {{ include('Expediente/modalAddProyectosVerExp.html.twig') }}
+    {{ parent() }}
+    <script src="{{ asset('easyadmin/tema/DataTables-1.10.10/media/js/jquery.dataTables.js') }}"></script>
+    <script src="{{ asset('easyadmin/plugins/multiselect/js/jquery.multi-select.js') }}"></script>
+    <script src="{{ asset('easyadmin/tema/select2/select2.full.min.js') }}"></script>
+    <script>
+        $(document).ready(function(){
+
+            (function(){
+                {% if not (is_granted("ROLE_PROCESADOR") or is_granted("ROLE_SUPERVISOR") or is_granted("ROLE_MINISTRO") or is_granted("ROLE_PAGADOR")) %}
+                    window.location.href = "{{ path('login') }}";
+                {% endif %}
+            })();
+
+            $('#dataFichaControl , #dataPresupuestoNeSeccion').dataTable();
+
+            $('#servicio , #numeroEconomico ').select2({
+
+                placeholder: 'Seleccione ...',
+                allowClear: true
+            });
+
+            //--------- abandonar el formulario -----------------
+            $('.salir').on('click', function ()
+            {
+                window.location.href = "{{ path(ruta) }}";
+
+            });
+            //datos expediente inicio
+
+            //js para agregar adjuntos inicio
+            // Validar extensiones del adjunto
+            $("#fichero_usuario").on('change', function(e){
+                var fichero = $("#fichero_usuario").val();
+                var input = document.getElementById('fichero_usuario');
+                var file = input.files[0]; //2 000 000
+                var allowedExtensions = /(.doc|.docx|.xls|.xlsx|.ppt|.pptx|.pdf|.rar|.zip)$/i;
+
+                if(!allowedExtensions.exec(fichero)) {
+                    alertify.alert('<strong>Sólo se pueden subir archivos con extensiones: .docx, .xlsx, .pptx .pdf, .rar, .zip.</strong>')
+                        .setHeader('<span class="glyphicon glyphicon-ban-circle" style="font-size: 20px"></span>' +
+                            '<h4 class="modal-title" style="display: inline-block; margin-left: 10px">Error</h4>')
+                        .set('label', 'Aceptar');
+                    $("#fichero_usuario").val('');
+                    return false;
+                } else if (file.size > 2000000)  {
+                    alertify.alert('<strong>El tamano del fichero no puede ser mayor que 2 MB.</strong>')
+                        .setHeader('<span class="glyphicon glyphicon-ban-circle" style="font-size: 20px"></span>' +
+                            '<h4 class="modal-title" style="display: inline-block; margin-left: 10px">Error</h4>')
+                        .set('label', 'Aceptar');
+                    $("#fichero_usuario").val('');
+                    return false;
+                } else {
+                    $("#addAdjunto").prop('disabled' , false);
+                }
+            });
+
+            var K = 0;
+            //funcion que agrega un adjunto  y la visualiza en la tabla
+            $('#addAdjunto').on('click', function(e){
+
+                var fichero = $("#fichero_usuario").val();
+                if (fichero==='') {
+                    alertify.alert('<strong>Seleccione un fichero adjunto</strong>')
+                        .setHeader('<span class="glyphicon glyphicon-ban-circle" style="font-size: 20px"></span>' +
+                            '<h4 class="modal-title" style="display: inline-block; margin-left: 10px">Error</h4>')
+                        .set('label','Aceptar');
+                    return false;
+                }
+
+                $("#addAdjunto").prop('disabled' , true);
+
+                $(".preload").removeClass('hidden');
+
+                e.preventDefault();
+                /*var f = $(this);*/
+                var formData = new FormData(document.getElementById("formAdjuntos"));
+                /* formData.append("dato", "valor");*/
+                //formData.append(f.attr("name"), $(this)[0].files[0]);
+
+                $.ajax({
+                    url: '{{ path('adjuntoInsertar' , {idExpediente: expediente.id}) }}',
+                    type: "post",
+                    dataType: "json",
+                    data: formData,
+                    cache: false,
+                    contentType: false,
+                    processData: false
+                }).done(function (data) {
+
+                    $(".preload").addClass('hidden');
+
+                    var obj = JSON.parse(data);
+
+                    if (obj['valido']) {
+
+                        $('#adjuntosTabla tbody').append('<tr data-id="'+ obj['idDocumento'] +'"><td  style="font-size: 14px;"><a href="' + obj['vinculo'] + '" target="_blank">'+ obj['nombreAdjunto'] +'</a></td><td>'+
+                            '<a href="#" data-toggle="tooltip" data-placement="top" title="Eliminar Adjunto"><i class="glyphicon glyphicon-trash delete" style="color: red" ></i></a>' +
+                            '</td></tr>');
+                    } else {
+                        alertify.alert('<strong>' + obj['mensaje'] + '</strong>')
+                            .setHeader('<span class="glyphicon glyphicon-ban-circle" style="font-size: 20px"></span>' +
+                                '<h4 class="modal-title" style="display: inline-block; margin-left: 10px">Error</h4>')
+                            .set('label','Aceptar');
+                        return false;
+
+                    }
+
+                    $('[data-toggle="tooltip"]').tooltip();
+
+                    $("#fichero_usuario").val('');
+
+                });
+
+            });
+
+            //funcion que elimina un registro del adjunto seleccionado y  de la tabla
+            $('#adjuntosTabla tbody').on('click', '.delete', function () {
+
+                var row = $(this).parents('tr');
+
+                var mat_datos = {
+                    idDocumento: row.data('id'),
+                    idExpediente: '{{ expediente.id }}',
+                };
+
+                alertify.confirm('Basic: false').set('message', 'Seguro que desea eliminar el adjunto').set('onok', function(){
+
+                    $(".preload").removeClass('hidden');
+
+                    $.ajax({
+                        type: "POST",
+                        dataType: "html",
+                        url: '{{ path("adjuntoEliminar") }}',
+                        data: mat_datos
+                    }).done(function (data) {
+                        $(".preload").addClass('hidden');
+                        if(data === 'ok'){
+                            //Elimina de la tabla
+                            id = row.data('id');
+                            row.fadeOut();
+                        }else {
+                            alertify.alert('<strong>'+data+'</strong>')
+                                .setHeader('<span class="glyphicon glyphicon-ok-circle" style="font-size: 20px"></span>' +
+                                    '<h4 class="modal-title" style="display: inline-block; margin-left: 10px">Confirmación</h4>')
+                                .set('label','Aceptar')
+                        }
+                    });
+                });
+
+            });
+            //js para agregar adjuntos fin
+
+            //datos expediente fin
+
+            // parametrizar inicio
+
+            //relacionar select servicio - N.E
+            $('#servicio').on('change' , function () {
+                var html = '';
+                var servicio = $('#servicio').val();
+                if (servicio == '') {
+                    $("#numeroEconomico").prop('disabled' , true);
+                    $("option").remove('.cambioNumeroEconomico');
+                }else {
+                    $("option").remove('.cambioNumeroEconomico');
+                    $("#inicio2").after('<option class="cambioNumeroEconomico"></option>');
+
+                    {% for presupuesto in  presupuestos %}
+                    var idServicio = '{{ presupuesto.servicio.id }}';
+
+                    if (servicio == idServicio) {
+                        var id = '{{ presupuesto.numeroeconomico.id }}';
+                        var name = '{{ presupuesto.numeroeconomico.codigonumeroeconomico~' - '~presupuesto.numeroeconomico.nombrenumeroeconomico }}';
+                        html += '<option class="cambioNumeroEconomico" value="' + id + '">' + name + '</option>';
+
+                    }
+                    {% endfor %}
+                    $(".cambioNumeroEconomico").replaceWith(html);
+                    $("#numeroEconomico").val('').prop('disabled' , false).select2({
+
+                        placeholder: 'Seleccione ...',
+                        allowClear: true
+                    });
+                }
+            });
+
+            //relacionar select N.E - Proyecto
+            $('#numeroEconomico').on('change' , function () {
+                var html = '';
+                var ne = $('#numeroEconomico').val();
+                if(ne == '73')
+                {
+                    var servicio = $('#servicio').val();
+                    if (servicio == '') {
+                        $("#proyecto").prop('disabled' , true);
+                        $("option").remove('.cambioProyecto');
+                    }else {
+                        $("option").remove('.cambioProyecto');
+                        $("#inicioProyecto").after('<option class="cambioProyecto"></option>');
+
+                        {% for proyecto in proyectos %}
+                            var idServicio = '{{ proyecto.presupuestoservicio.servicio.id }}';
+
+                            if (servicio == idServicio ) {
+                                var id = '{{ proyecto.id }}';
+                                {% set disponibilidad = proyecto.presupuesto - proyecto.valordisponible/1000 %}
+                                {% set liquidez = proyecto.presupuesto - proyecto.valorejecutado/1000 %}
+                                var name = '{{ 'Código: '~proyecto.codigoproyecto~' -  Disponibilidad: '~ disponibilidad|number_format(0, ',', '.')~' '~tipoMoneda~' - Liquidez: '~liquidez|number_format(0, ',', '.')~' '~tipoMoneda }}';
+                                html += '<option class="cambioProyecto" value="' + id + '">' + name + '</option>';
+
+                            }
+                        {% endfor %}
+                        $(".cambioProyecto").replaceWith(html);
+                        $('#addProyectosExpediente').modal('show');
+                    }
+                }
+            });
+
+            //agregar proyecto al arreglo
+            var montoProyecto = 0;
+            var proyectos = [];
+            var P = 0;
+
+            $('#addProyecto').on('click' , function () {
+                var proyecto = $('#proyecto').val();
+
+                if(  proyecto === '' ){
+                    $('#addProyectosExpediente').modal('hide');
+                    alertify.alert('<strong>Debe seleccionar un proyecto  para agregar .</strong>')
+                        .setHeader('<span class="glyphicon glyphicon-ban-circle" style="font-size: 20px"></span>' +
+                            '<h4 class="modal-title" style="display: inline-block; margin-left: 10px">Error</h4>')
+                        .set('label','Aceptar')
+                        .set('onok', function () {
+
+                            $('#addProyectosExpediente').modal('show');
+                        });
+                    return false;
+                }
+                if ( $("#montoProyecto").val().trim() == '' || $("#montoProyecto").val() == 0) {
+
+                    $('#addProyectosExpediente').modal('hide');
+                    alertify.alert('<strong>Debe teclear un monto para agregar un proyecto.</strong>')
+                        .setHeader('<span class="glyphicon glyphicon-ban-circle" style="font-size: 20px"></span>' +
+                            '<h4 class="modal-title" style="display: inline-block; margin-left: 10px">Error</h4>')
+                        .set('label','Aceptar')
+                        .set('onok', function () {
+
+                            $('#addProyectosExpediente').modal('show');
+                        });
+                    return false;
+                }
+
+                var monto = parseFloat($("#montoProyecto").val());
+
+                for ( index = 0; index < proyectos.length; index++){
+
+                    if(proyectos[index] != null){
+                        if(proyecto === proyectos[index]['proyecto']){
+
+                            $('#addProyectosExpediente').modal('hide');
+                            alertify.alert('<strong>Error: ya se agregó este proyecto.</strong>')
+                                .setHeader('<span class="glyphicon glyphicon-ban-circle" style="font-size: 20px"></span>' +
+                                    '<h4 class="modal-title" style="display: inline-block; margin-left: 10px">Error</h4>')
+                                .set('label','Aceptar')
+                                .set('onok', function () {
+
+                                    $('#addProyectosExpediente').modal('show');
+                                });
+                            return false;
+                        }
+                    }
+                }
+
+                var codProyecto = '';
+                var diponibilidad = '';
+                var liquidez = '';
+
+                {% for proyecto in  proyectos %}
+                    var idProyecto = '{{ proyecto.id }}';
+
+                    if (idProyecto == proyecto) {
+                        codProyecto = '{{ proyecto.codigoproyecto }}';
+                        diponibilidad = '{{ (proyecto.presupuesto - proyecto.valordisponible/1000)|number_format(0, ',', '.') }}';
+                        liquidez = '{{ (proyecto.presupuesto - proyecto.valorejecutado/1000)|number_format(0, ',', '.') }}';
+                    }
+                {% endfor %}
+
+                $('#proyectoTabla tbody').append('<tr data-id="'+I+'"><td>'+ codProyecto +'</td><td>'+ diponibilidad +'</td><td>'+ liquidez +'</td><td>' + numberSeparator(monto) +
+                    '</td><td><a href="#" data-toggle="tooltip" data-placement="top" title="Eliminar Proyecto"><i class="glyphicon glyphicon-trash deleteProyecto" style="color: red" ></i></a>' +
+                    '</td></tr>');
+
+                proyectos.push({
+                    proyecto: proyecto,
+                    monto:  monto,
+                });
+
+                montoProyecto += parseFloat(monto);
+
+                $('[data-toggle="tooltip"]').tooltip();
+                P++;
+
+                $('#proyecto').val('').parents('div').addClass('form-md-floating-label');
+
+                $('#montoProyecto').val('').parents('div').addClass('form-md-floating-label');
+            });
+
+            //reiniciar modal
+            function reiniciarModal(){
+                $('#numeroEconomico').val('').select2('').select2({
+
+                    placeholder: 'Seleccione ...',
+                    allowClear: true
+                });
+                proyectos = [];
+                montoProyecto = 0;
+                $('#proyecto').val('').parents('div').addClass('form-md-floating-label');
+
+                $('#montoProyecto').val('').parents('div').addClass('form-md-floating-label');
+                $('#proyectoTabla tbody').empty();
+            }
+
+
+            //salir de la modal de proyectos
+            $('#btnSalirAddProyectos').on('click' , function () {
+                $('#addProyectosExpediente').modal('hide');
+                reiniciarModal();
+            });
+
+            //funcion que elimina una partida  del arreglo y de  la tabla
+            $('#proyectoTabla tbody').on('click', '.deleteProyecto', function () {
+                var row = $(this).parents('tr');
+                id = row.data('id');
+                row.fadeOut();
+                var montoResta = partidas[id]['monto'];
+                montoProyecto -= parseFloat(montoResta);
+                /*partidas.splice(id,1);*/
+                delete proyectos[id];
+            });
+
+            //funcion para armar el select de servicios una vez insertada una partida
+            function armarSelectServicio(seccion) {
+                var html = '';
+                $("option").remove('.cambioServicio');
+                $("#inicio").after('<option class="cambioServicio"></option>');
+
+                {% for servicio in  servicios %}
+
+                var idSeccion = '{{ servicio.getSeccion().id }}';
+
+                if (idSeccion == seccion || seccion == 0) {
+                    var id = {{ servicio.id }};
+                    var name = '{{ servicio.getSeccion().codigoseccion~servicio.codigoservicio ~'-'~ servicio.nombreservicio }}';
+                    html += '<option class="cambioServicio" value="' + id + '">' + name + '</option>';
+
+                }
+                {% endfor %}
+                $(".cambioServicio").replaceWith(html);
+            }
+
+            //variables para llenar el monto a pagar , el administrador del credito y las partidas
+            {% set parametrizaciones = expediente.parametrizaciones %}
+            {% set montoApagar = expediente.importesolicitado %}
+            {% if parametrizaciones|length != 0 %}
+                {% set montoApagar = parametrizaciones[parametrizaciones|length-1].montoapagar %}
+            {% endif %}
+            var montoSolicitado = 0;
+            var montoAPagar = parseFloat('{{ montoApagar }}');
+            var administradorCredito = '{{ expediente.seccion.nombreseccion }}';
+            var partidas = [];
+            var I = 0;
+
+            //agregando las partidas que trae el expediente al array
+            {% for partida in expediente.partidas %}
+
+                var idServicio = '{{ partida.presupuestoservicio.servicio.id }}';
+                var idNumeroEconomico = '{{ partida.presupuestoservicio.numeroeconomico.id }}';
+                var montoPartida = parseFloat('{{ partida.importesolicitado }}');
+
+                montoSolicitado += parseFloat(montoPartida);
+
+                if( idNumeroEconomico == '73')
+                {
+                    {% for proyecto in  partida.proyectos %}
+                         var proyectoOld = '{{ proyecto.presupuestoproyecto.id }}';
+                         var montoOld = '{{ proyecto.importesolicitado }}';
+                        proyectos.push({
+                            proyecto: proyectoOld,
+                            monto:  montoOld,
+                        });
+                    {% endfor %}
+                    partidas.push({
+                        servicio: idServicio,
+                        numeroEconomico: idNumeroEconomico,
+                        monto:  montoPartida,
+                        proyectos: proyectos,
+                    });
+                }else{
+                    partidas.push({
+                        servicio: idServicio,
+                        numeroEconomico: idNumeroEconomico,
+                        monto:  montoPartida,
+                    });
+                }
+                I++;
+            {% endfor %}
+
+            armarSelectServicio('{{ expediente.seccion.id }}');
+
+            //funcion que agrega una partida y la visualiza en la tabla
+            $('#btnAceptarAddProyectos').on('click', function(){
+
+                var servicio = $("#servicio").val();
+                var numeroEconomico =  $("#numeroEconomico").val();
+
+                if ( montoProyecto == 0) {
+                    $('#addProyectosExpediente').modal('hide');
+                    alertify.alert('<strong>Debe agregar proyectos para insertar esta partida.</strong>')
+                        .setHeader('<span class="glyphicon glyphicon-ban-circle" style="font-size: 20px"></span>' +
+                            '<h4 class="modal-title" style="display: inline-block; margin-left: 10px">Error</h4>')
+                        .set('label','Aceptar')
+                        .set('onok', function () {
+
+                            $('#addProyectosExpediente').modal('show');
+                        });
+                    return false;
+                }
+
+                var monto = montoProyecto;
+
+                for ( index = 0; index < partidas.length; index++){
+
+                    if(partidas[index] != null){
+                        if(servicio === partidas[index]['servicio'] && numeroEconomico === partidas[index]['numeroEconomico']){
+
+                            $('#addProyectosExpediente').modal('hide');
+                            alertify.alert('<strong>Error: ya existe una numeración económica con este servicio y este número económico.</strong>')
+                                .setHeader('<span class="glyphicon glyphicon-ban-circle" style="font-size: 20px"></span>' +
+                                    '<h4 class="modal-title" style="display: inline-block; margin-left: 10px">Error</h4>')
+                                .set('label','Aceptar')
+                                .set('onok', function () {
+
+                                    $('#addProyectosExpediente').modal('show');
+                                });
+                            return false;
+                        }
+                    }
+                }
+
+                var codServicio = '';
+                var idSeccion = '';
+                var codSeccion = '';
+                var nombreSeccion = '';
+                var codNE = '';
+                var codArticulo = '';
+                var codCapitulo = '';
+
+
+                {% for servicio in  servicios %}
+                    var idServicio = '{{ servicio.id }}';
+
+                    if (idServicio == servicio) {
+                        codServicio = '{{ servicio.codigoservicio }}';
+                        idSeccion = '{{ servicio.getSeccion().id }}';
+                        codSeccion = '{{ servicio.getSeccion().codigoseccion }}';
+                        nombreSeccion = '{{ servicio.getSeccion().nombreseccion }}';
+                    }
+                {% endfor %}
+
+                if(administradorCredito == ''){
+                    armarSelectServicio(idSeccion);
+                    administradorCredito = nombreSeccion;
+                    $('#administradorCredito').val(nombreSeccion).parents('div').removeClass('form-md-floating-label');
+                }
+
+                {% for numeroEconomico in  numerosEconomicos %}
+                var idNumero = '{{ numeroEconomico.id }}';
+
+                if (idNumero == numeroEconomico) {
+                    codNE = '{{ numeroEconomico.codigonumeroeconomico }}';
+                    codArticulo = '{{ numeroEconomico.getArticulo() }}';
+                    codCapitulo = '{{ numeroEconomico.getCapitulo().codigocapitulo }}';
+                }
+                {% endfor %}
+
+                $('#numeracionEconomicaTablaParametrizar tbody').append('<tr data-id="'+I+'"><td>'+ codSeccion +'</td><td>'+ codServicio +'</td><td>'+ codCapitulo +'</td><td>' + codArticulo +'</td><td>' + codNE +'</td><td>' + numberSeparator(monto) +'</td><td>' +
+                    '<a href="#" data-toggle="tooltip" data-placement="top" title="Eliminar Partida"><i class="glyphicon glyphicon-trash delete" style="color: red" ></i></a>' +
+                    '</td></tr>');
+
+                partidas.push({
+                    servicio: servicio,
+                    numeroEconomico: numeroEconomico,
+                    monto:  monto,
+                    proyectos: proyectos,
+                });
+
+                montoAPagar += parseFloat(monto);
+                $('#montoAPagar').parents('div').removeClass('form-md-floating-label');
+                $('#montoAPagar').val(numberSeparator(montoSolicitado));
+
+
+
+                $('[data-toggle="tooltip"]').tooltip();
+                I++;
+
+                $('#servicio , #numeroEconomico').val('').select2('').select2({
+
+                    placeholder: 'Seleccione ...',
+                    allowClear: true
+                });
+
+                $('#montoPartida').val('').parents('div').addClass('form-md-floating-label');
+                $("#numeroEconomico").prop('disabled' , true);
+                $('#addProyectosExpediente').modal('hide');
+                reiniciarModal();
+            });
+
+            $('#addNumeracionEconomicaParmetrizar').on('click', function(){
+
+                var servicio = $("#servicio").val();
+                var numeroEconomico =  $("#numeroEconomico").val();
+
+                if(  servicio === '' ){
+                    alertify.alert('<strong>Debe seleccionar un servicio  para agregar una numeración económica.</strong>')
+                        .setHeader('<span class="glyphicon glyphicon-ban-circle" style="font-size: 20px"></span>' +
+                            '<h4 class="modal-title" style="display: inline-block; margin-left: 10px">Error</h4>')
+                        .set('label','Aceptar');
+                    return false;
+                }
+                if(numeroEconomico === '') {
+                    alertify.alert('<strong>Debe seleccionar un número económico para agregar una numeración económica.</strong>')
+                        .setHeader('<span class="glyphicon glyphicon-ban-circle" style="font-size: 20px"></span>' +
+                            '<h4 class="modal-title" style="display: inline-block; margin-left: 10px">Error</h4>')
+                        .set('label', 'Aceptar');
+                    return false;
+                }
+                if ( $("#montoPartida").val().trim() == '' ) {
+                    alertify.alert('<strong>Debe teclear un monto para agregar una numeración económica.</strong>')
+                        .setHeader('<span class="glyphicon glyphicon-ban-circle" style="font-size: 20px"></span>' +
+                            '<h4 class="modal-title" style="display: inline-block; margin-left: 10px">Error</h4>')
+                        .set('label','Aceptar');
+                    return false;
+                }
+
+                var monto = parseFloat($("#montoPartida").val());
+
+                for ( index = 0; index < partidas.length; index++){
+
+                    if(partidas[index] != null){
+                        if(servicio === partidas[index]['servicio'] && numeroEconomico === partidas[index]['numeroEconomico']){
+
+                            $('#addProyectosExpediente').modal('hide');
+                            alertify.alert('<strong>Error: ya existe una numeración económica con este servicio y este número económico.</strong>')
+                                .setHeader('<span class="glyphicon glyphicon-ban-circle" style="font-size: 20px"></span>' +
+                                    '<h4 class="modal-title" style="display: inline-block; margin-left: 10px">Error</h4>')
+                                .set('label','Aceptar')
+                                .set('onok', function () {
+
+                                    $('#addProyectosExpediente').modal('show');
+                                });
+                            return false;
+                        }
+                    }
+                }
+
+                var codServicio = '';
+                var idSeccion = '';
+                var codSeccion = '';
+                var nombreSeccion = '';
+                var codNE = '';
+                var codArticulo = '';
+                var codCapitulo = '';
+
+
+                {% for servicio in  servicios %}
+                    var idServicio = '{{ servicio.id }}';
+
+                    if (idServicio == servicio) {
+                        codServicio = '{{ servicio.codigoservicio }}';
+                        idSeccion = '{{ servicio.getSeccion().id }}';
+                        codSeccion = '{{ servicio.getSeccion().codigoseccion }}';
+                        nombreSeccion = '{{ servicio.getSeccion().nombreseccion }}';
+                    }
+                {% endfor %}
+
+                if(administradorCredito == ''){
+                    armarSelectServicio(idSeccion);
+                    administradorCredito = nombreSeccion;
+                    $('#administradorCredito').val(nombreSeccion).parents('div').removeClass('form-md-floating-label');
+                }
+
+                {% for numeroEconomico in  numerosEconomicos %}
+                    var idNumero = '{{ numeroEconomico.id }}';
+
+                    if (idNumero == numeroEconomico) {
+                        codNE = '{{ numeroEconomico.codigonumeroeconomico }}';
+                        codArticulo = '{{ numeroEconomico.getArticulo() }}';
+                        codCapitulo = '{{ numeroEconomico.getCapitulo().codigocapitulo }}';
+                    }
+                {% endfor %}
+
+                $('#numeracionEconomicaTablaParametrizar tbody').append('<tr data-id="'+I+'"><td>'+ codSeccion +'</td><td>'+ codServicio +'</td><td>'+ codCapitulo +'</td><td>' + codArticulo +'</td><td>' + codNE +'</td><td>' + numberSeparator(monto) +'</td><td>' +
+                    '<a href="#" data-toggle="tooltip" data-placement="top" title="Eliminar Partida"><i class="glyphicon glyphicon-trash delete" style="color: red" ></i></a>' +
+                    '</td></tr>');
+
+                partidas.push({
+                    servicio: servicio,
+                    numeroEconomico: numeroEconomico,
+                    monto:  monto,
+                });
+
+                montoAPagar += parseFloat(monto);
+                $('#montoAPagar').parents('div').removeClass('form-md-floating-label');
+                $('#montoAPagar').val(numberSeparator(montoAPagar));
+
+
+
+                $('[data-toggle="tooltip"]').tooltip();
+                I++;
+
+                $('#servicio , #numeroEconomico').val('').select2('').select2({
+
+                    placeholder: 'Seleccione ...',
+                    allowClear: true
+                });
+
+                $('#montoPartida').val('');
+                $("#numeroEconomico").prop('disabled' , true);
+
+            });
+
+            //funcion que elimina una partida  del arreglo y de  la tabla
+            $('#numeracionEconomicaTablaParametrizar tbody').on('click', '.delete', function () {
+                var row = $(this).parents('tr');
+                id = row.data('id');
+                row.fadeOut();
+                var montoResta = partidas[id]['monto'];
+                montoAPagar -= parseFloat(montoResta);
+                /*partidas.splice(id,1);*/
+                delete partidas[id];
+                $('#montoAPagar').val(numberSeparator(montoAPagar));
+
+                if(montoAPagar == 0){
+                    administradorCredito = '';
+                    armarSelectServicio(0);
+                    $('#administradorCredito').val('').parents('div').addClass('form-md-floating-label');
+                    $('#montoAPagar').val('').parents('div').addClass('form-md-floating-label');
+                }
+            });
+
+            $('#parametros').multiSelect();
+
+            $('.ms-list .ms-elem-selectable.misParametros').each(function(){
+                $(this).css('display', 'none');
+                $(this).addClass('ms-hover');
+                $(this).addClass('ms-selected');
+
+            });
+
+            $('.ms-list .ms-elem-selection.misParametros').each(function(){
+                $(this).addClass('ms-selected');
+                $(this).css('display', '');
+            });
+
+            $('#dictamen').on('keyup' , function () {
+                if($(this).val().trim() == ''){ $(this).parents('div').addClass('form-md-floating-label'); }
+            });
+
+            $('#btnActualizar').on('click',function () {
+
+                if(montoAPagar == 0){
+                    alertify.alert('<strong>Debe agregar al menos  una partida presupuestaria.</strong>')
+                        .setHeader('<span class="glyphicon glyphicon-ban-circle" style="font-size: 20px"></span>' +
+                            '<h4 class="modal-title" style="display: inline-block; margin-left: 10px">Error</h4>')
+                        .set('label','Aceptar');
+                    return false;
+                }
+
+                var parametros = [];
+
+                $(' li.ms-elem-selectable ').each(function(){
+
+                    if($(this).hasClass('ms-selected')){
+
+                        var valor = $(this).text();
+                        parametros.push(valor);
+                    }
+                });
+
+                $(".preload").removeClass('hidden');
+
+                var prioritario = 0;
+                if ($('#prioritario').prop('checked')) {
+                    prioritario = 1;
+                }
+
+                var mat_datos = {
+
+                    idExpediente: '{{ expediente.id }}',
+                    prioritario: prioritario,
+                    montoAPagar: montoAPagar,
+                    dictamen: $("#dictamen").val(),
+                    parametros: parametros,
+                    nombreSeccion: administradorCredito,
+                    partidas: partidas,
+                };
+
+                $.ajax({
+                    type: "POST",
+                    dataType: "html",
+                    url: '{{ path("actualizarExpediente") }}',
+                    data: mat_datos
+                }).done(function (data) {
+
+                    $(".preload").addClass('hidden');
+                    if(data == 'ok'){
+
+                        alertify.alert('<strong>El expediente ha sido actualizado correctamente .</strong>')
+                            .setHeader('<span class="glyphicon glyphicon-ok-circle" style="font-size: 20px"></span>' +
+                                '<h4 class="modal-title" style="display: inline-block; margin-left: 10px">Confirmacion</h4>')
+                            .set('label','Aceptar')
+                            .set('onok', function () {
+                                $(".preload").removeClass('hidden');
+                                window.location.reload();
+                            });
+                    }else if(data.indexOf('sin crédito') != -1){
+
+                        alertify.alert('<strong>'+ data +'</strong>')
+                            .setHeader('<span class="glyphicon glyphicon-ban-circle" style="font-size: 20px"></span>' +
+                                '<h4 class="modal-title" style="display: inline-block; margin-left: 10px">Error</h4>')
+                            .set('label','Aceptar')
+                            .set('onok', function () {
+
+                                window.location.href = "{{ path(ruta) }}";
+                            });
+
+                    }else{
+                        alertify.alert('<strong>'+ data +'</strong>')
+                            .setHeader('<span class="glyphicon glyphicon-ban-circle" style="font-size: 20px"></span>' +
+                                '<h4 class="modal-title" style="display: inline-block; margin-left: 10px">Error</h4>')
+                            .set('label','Aceptar')
+                    }
+                });
+
+            });
+
+            $('#btnAprobar').on('click',function () {
+
+                if(montoAPagar == 0){
+                    alertify.alert('<strong>Debe agregar al menos  una partida presupuestaria.</strong>')
+                        .setHeader('<span class="glyphicon glyphicon-ban-circle" style="font-size: 20px"></span>' +
+                            '<h4 class="modal-title" style="display: inline-block; margin-left: 10px">Error</h4>')
+                        .set('label','Aceptar');
+                    return false;
+                }
+
+                var parametros = [];
+
+                $(' li.ms-elem-selectable ').each(function(){
+
+                    if($(this).hasClass('ms-selected')){
+
+                        var valor = $(this).text();
+                        parametros.push(valor);
+                    }
+                });
+
+                $(".preload").removeClass('hidden');
+
+                var prioritario = 0;
+                if ($('#prioritario').prop('checked')) {
+                    prioritario = 1;
+                }
+
+                var mat_datos = {
+
+                    idExpediente: '{{ expediente.id }}',
+                    prioritario: prioritario,
+                    montoAPagar: montoAPagar,
+                    dictamen: $("#dictamen").val(),
+                    parametros: parametros,
+                    nombreSeccion: administradorCredito,
+                    partidas: partidas,
+                };
+
+                $.ajax({
+                    type: "POST",
+                    dataType: "html",
+                    url: '{{ path("aprobarExpediente") }}',
+                    data: mat_datos
+                }).done(function (data) {
+
+                    $(".preload").addClass('hidden');
+                    if(data == 'ok'){
+
+                        alertify.alert('<strong>El expediente ha sido aprobado correctamente .</strong>')
+                            .setHeader('<span class="glyphicon glyphicon-ok-circle" style="font-size: 20px"></span>' +
+                                '<h4 class="modal-title" style="display: inline-block; margin-left: 10px">Confirmacion</h4>')
+                            .set('label','Aceptar')
+                            .set('onok', function () {
+
+                                window.location.href = "{{ path(ruta) }}";
+                            });
+                    }else if(data.indexOf('dataPartidasSinFondo') != -1){
+
+                        $('#tablaPartidasSinFondo').replaceWith(data);
+                        $('#partidasSobregiradasExpediente').modal('show');
+
+                    }else{
+                        alertify.alert('<strong>'+ data +'</strong>')
+                            .setHeader('<span class="glyphicon glyphicon-ban-circle" style="font-size: 20px"></span>' +
+                                '<h4 class="modal-title" style="display: inline-block; margin-left: 10px">Error</h4>')
+                            .set('label','Aceptar')
+                    }
+                });
+
+            });
+
+            //funciones de los botones de la modal modalPartidasSobregiradasExpediente
+            //--------- oculta la modal -----------------
+            $('#btnSalirPartidasSobregiradas').on('click', function ()
+            {
+                $('#partidasSobregiradasExpediente').modal('hide');
+
+            });
+
+            $('#btnPonerExpedienteSincredito').on('click', function (){
+
+                $('#partidasSobregiradasExpediente').modal('hide');
+                $(".preload").removeClass('hidden');
+
+                var mat_datos = {
+                    idExpediente: '{{ expediente.id }}'
+                };
+
+                $.ajax({
+                    type: "POST",
+                    dataType: "html",
+                    url: '{{ path("pasarExpedienteASinCredito") }}',
+                    data: mat_datos
+                }).done(function (data) {
+
+                    $(".preload").addClass('hidden');
+                    if(data == 'ok'){
+
+                        alertify.alert('<strong>El expediente se encuentra en el listado de expedientes sin crédito.</strong>')
+                            .setHeader('<span class="glyphicon glyphicon-ok-circle" style="font-size: 20px"></span>' +
+                                '<h4 class="modal-title" style="display: inline-block; margin-left: 10px">Confirmacion</h4>')
+                            .set('label','Aceptar')
+                            .set('onok', function () {
+
+                                window.location.href = "{{ path(ruta) }}";
+                            });
+                    }else{
+                        alertify.alert('<strong>'+ data +'</strong>')
+                            .setHeader('<span class="glyphicon glyphicon-ban-circle" style="font-size: 20px"></span>' +
+                                '<h4 class="modal-title" style="display: inline-block; margin-left: 10px">Error</h4>')
+                            .set('label','Aceptar')
+                    }
+                });
+
+            });
+
+            $('#btnDesestimar').on('click',function () {
+
+                if(montoAPagar == 0){
+                    alertify.alert('<strong>Debe agregar al menos  una partida presupuestaria.</strong>')
+                        .setHeader('<span class="glyphicon glyphicon-ban-circle" style="font-size: 20px"></span>' +
+                            '<h4 class="modal-title" style="display: inline-block; margin-left: 10px">Error</h4>')
+                        .set('label','Aceptar');
+                    return false;
+                }
+
+                var parametros = [];
+
+                $(' li.ms-elem-selectable ').each(function(){
+
+                    if($(this).hasClass('ms-selected')){
+
+                        var valor = $(this).text();
+                        parametros.push(valor);
+                    }
+                });
+
+                $(".preload").removeClass('hidden');
+
+                var prioritario = 0;
+                if ($('#prioritario').prop('checked')) {
+                    prioritario = 1;
+                }
+
+                var mat_datos = {
+
+                    idExpediente: '{{ expediente.id }}',
+                    prioritario: prioritario,
+                    montoAPagar: montoAPagar,
+                    dictamen: $("#dictamen").val(),
+                    parametros: parametros,
+                    nombreSeccion: administradorCredito,
+                    partidas: partidas,
+                };
+
+                $.ajax({
+                    type: "POST",
+                    dataType: "html",
+                    url: '{{ path("desestimarExpediente") }}',
+                    data: mat_datos
+                }).done(function (data) {
+
+                    $(".preload").addClass('hidden');
+                    if(data == 'ok'){
+
+                        alertify.alert('<strong>El expediente ha sido desestimado .</strong>')
+                            .setHeader('<span class="glyphicon glyphicon-ok-circle" style="font-size: 20px"></span>' +
+                                '<h4 class="modal-title" style="display: inline-block; margin-left: 10px">Confirmacion</h4>')
+                            .set('label','Aceptar')
+                            .set('onok', function () {
+
+                                window.location.href = "{{ path(ruta) }}";
+                            });
+                    }else{
+                        alertify.alert('<strong>'+ data +'</strong>')
+                            .setHeader('<span class="glyphicon glyphicon-ban-circle" style="font-size: 20px"></span>' +
+                                '<h4 class="modal-title" style="display: inline-block; margin-left: 10px">Error</h4>')
+                            .set('label','Aceptar')
+                    }
+                });
+
+            });
+            // parametrizar fin
+
+            //ficha de control inicio
+
+            $('#partidasExpediente').on('change' , function () {
+
+                $(".preload").removeClass('hidden');
+
+                var mat_datos = {
+                    presupuestoServicio: $("#partidasExpediente").val(),
+                    idExpediente: '{{ expediente.id }}'
+                };
+
+                {% for partida in  expediente.partidas %}
+                    var idPresupuestoServicio = '{{ partida.presupuestoservicio.id }}';
+
+                    if (mat_datos['presupuestoServicio'] === idPresupuestoServicio) {
+                        var presupuestoPartida =  '{{  (partida.presupuestoservicio.presupuestounitario/1000)|number_format(0, ',', '.') }}';
+                        var disponibilidadPartida = '{{ ((partida.presupuestoservicio.presupuestounitario - partida.presupuestoservicio.valordisponible)/1000)|number_format(0, ',', '.') }}';
+                        var liquidezPartida ='{{ ((partida.presupuestoservicio.presupuestounitario - partida.presupuestoservicio.valorejecutado)/1000)|number_format(0, ',', '.') }}';
+                        var compromisoPartida = '{{ (partida.presupuestoservicio.valorejecutado/1000)|number_format(0, ',', '.') }}';
+                        $("#divPresupuesto").text(' Presupuesto: ' + presupuestoPartida);
+                        if(presupuestoPartida < 0){ $("#divPresupuesto").css('color' , 'red'); }
+                        $("#divDisponibilidad").text('Disponibilidad: ' + disponibilidadPartida);
+                        if(disponibilidadPartida < 0){ $("#divDisponibilidad").css('color' , 'red'); }
+                        $("#divLiquidez").text(' Liquidez: ' + liquidezPartida);
+                        if(liquidezPartida < 0){ $("#divLiquidez").css('color' , 'red'); }
+                        $("#divCompromiso").text(' Compromiso: ' + compromisoPartida);
+                        if(compromisoPartida < 0){ $("#divCompromiso").css('color' , 'red'); }
+                    }
+                {% endfor %}
+
+                $.ajax({
+                    type: "POST",
+                    dataType: "html",
+                    url: '{{ path("expedientesFichaControl") }}',
+                    data: mat_datos
+                }).done(function (data) {
+
+                    $(".preload").addClass('hidden');
+                    $('#containerResultado').replaceWith(data).css("display","block");
+                    $('#dataFichaControl').DataTable();
+                });
+            });
+
+            //ficha de control fin
+
+            //historico inicio
+            $('#dataHistorico tbody').on('click', '.tocar', function () {
+
+                var row = $(this).parents('tr');
+                var idRow = row.data('id');
+
+                $('.activo').addClass('hidden').removeClass('activo');
+                $('#portlet'+idRow).addClass('activo').removeClass('hidden');
+
+                $('#dataHistorico td').each(function(){
+                    $('.tocar').css('color' , '#333333');
+                });
+                $(this).css('color' , '#009490');
+
+            });
+            //historico fin
+
+            //presupuesto inicio
+            $('#secciones').on('change' , function () {
+
+                $(".preload").removeClass('hidden');
+
+                var mat_datos = {
+
+                    idSeccion: $('#secciones').val(),
+                };
+
+                {% for presupuesto in  presupuestosSecciones %}
+                    var idSeccion = '{{ presupuesto['idSeccion'] }}';
+
+                    if (mat_datos['idSeccion'] === idSeccion) {
+                        var presupuestoSeccion =  '{{  presupuesto['Presupuesto']|number_format(0, ',', '.')~' '~tipoMoneda }}';
+                        var disponibilidadSeccion = '{{ presupuesto['Disponibilidad']|number_format(0, ',', '.')~' '~tipoMoneda }}';
+                        var liquidezSeccion ='{{ presupuesto['Liquidez']|number_format(0, ',', '.')~' '~tipoMoneda }}';
+                        var compromisoSeccion = '{{ presupuesto['Compromiso']|number_format(0, ',', '.')~' '~tipoMoneda }}';
+                        $("#divPresupuestoSeccion").text(' Presupuesto: ' + presupuestoSeccion);
+                        $("#divDisponibilidadSeccion").text('Disponibilidad: ' + disponibilidadSeccion);
+                        $("#divLiquidezSeccion").text(' Liquidez: ' + liquidezSeccion);
+                        $("#divCompromisoSeccion").text(' Compromiso: ' + compromisoSeccion);
+                        {% if presupuesto['Presupuesto']    < 0 %} $("#divPresupuestoSeccion").css('color' , 'red');    {% endif %}
+                        {% if presupuesto['Disponibilidad'] < 0 %} $("#divDisponibilidadSeccion").css('color' , 'red'); {% endif %}
+                        {% if presupuesto['Liquidez']       < 0 %} $("#divLiquidezSeccion").css('color' , 'red');       {% endif %}
+                        {% if presupuesto['Compromiso']     < 0 %} $("#divCompromisoSeccion").css('color' , 'red');     {% endif %}
+                    }
+                {% endfor %}
+
+                $.ajax({
+                    type: "POST",
+                    dataType: "html",
+                    url: '{{ path("presupuestosNeSeccion") }}',
+                    data: mat_datos
+                }).done(function (data) {
+
+                    $(".preload").addClass('hidden');
+                    $('#containerPresupuesto').replaceWith(data).css("display","block");
+                    $('#dataPresupuestoNeSeccion').DataTable();
+                });
+            });
+            //presupuesto fin
+
+            //Orden de pago inicio
+
+            {% set parametrizaciones = expediente.parametrizaciones %}
+            {% set importeApagar = expediente.importesolicitado %}
+            {% if parametrizaciones|length != 0 %}
+                {% set importeApagar = parametrizaciones[parametrizaciones|length-1].montoapagar %}
+            {% endif %}
+            {% if expediente.mandamientopago == 1 and expediente.mandamientosPagos|length != 0 %}
+                {% set mandamientos = expediente.mandamientosPagos %}
+                {% set importeApagar = mandamientos[mandamientos|length-1].importemandamientopago %}
+            {% endif %}
+
+            var importeApagar = parseFloat('{{ importeApagar }}');
+
+            //funcion que agrega una partida y la visualiza en la tabla
+            //funcion que agrega una partida y la visualiza en la tabla
+            $('#btnAceptarAddProyectosOP').on('click', function(){
+
+                var servicio = $("#servicio").val();
+                var numeroEconomico =  $("#numeroEconomico").val();
+
+                if ( montoProyecto == 0) {
+                    $('#addProyectosExpediente').modal('hide');
+                    alertify.alert('<strong>Debe agregar proyectos para insertar esta partida.</strong>')
+                        .setHeader('<span class="glyphicon glyphicon-ban-circle" style="font-size: 20px"></span>' +
+                            '<h4 class="modal-title" style="display: inline-block; margin-left: 10px">Error</h4>')
+                        .set('label','Aceptar')
+                        .set('onok', function () {
+
+                            $('#addProyectosExpediente').modal('show');
+                        });
+                    return false;
+                }
+
+                var monto = montoProyecto;
+
+                for ( index = 0; index < partidas.length; index++){
+
+                    if(partidas[index] != null){
+                        if(servicio === partidas[index]['servicio'] && numeroEconomico === partidas[index]['numeroEconomico']){
+
+                            $('#addProyectosExpediente').modal('hide');
+                            alertify.alert('<strong>Error: ya existe una numeración económica con este servicio y este número económico.</strong>')
+                                .setHeader('<span class="glyphicon glyphicon-ban-circle" style="font-size: 20px"></span>' +
+                                    '<h4 class="modal-title" style="display: inline-block; margin-left: 10px">Error</h4>')
+                                .set('label','Aceptar')
+                                .set('onok', function () {
+
+                                    $('#addProyectosExpediente').modal('show');
+                                });
+                            return false;
+                        }
+                    }
+                }
+
+                var codServicio = '';
+                var idSeccion = '';
+                var codSeccion = '';
+                var nombreSeccion = '';
+                var codNE = '';
+                var codArticulo = '';
+                var codCapitulo = '';
+
+
+                {% for servicio in  servicios %}
+                var idServicio = '{{ servicio.id }}';
+
+                if (idServicio == servicio) {
+                    codServicio = '{{ servicio.codigoservicio }}';
+                    idSeccion = '{{ servicio.getSeccion().id }}';
+                    codSeccion = '{{ servicio.getSeccion().codigoseccion }}';
+                    nombreSeccion = '{{ servicio.getSeccion().nombreseccion }}';
+                }
+                {% endfor %}
+
+                if(administradorCredito == ''){
+                    armarSelectServicio(idSeccion);
+                    administradorCredito = nombreSeccion;
+                    $('#administradorCredito').val(nombreSeccion).parents('div').removeClass('form-md-floating-label');
+                }
+
+                {% for numeroEconomico in  numerosEconomicos %}
+                var idNumero = '{{ numeroEconomico.id }}';
+
+                if (idNumero == numeroEconomico) {
+                    codNE = '{{ numeroEconomico.codigonumeroeconomico }}';
+                    codArticulo = '{{ numeroEconomico.getArticulo() }}';
+                    codCapitulo = '{{ numeroEconomico.getCapitulo().codigocapitulo }}';
+                }
+                {% endfor %}
+
+                $('#numeracionEconomicaTablaOrdenPago tbody').append('<tr data-id="'+I+'"><td>'+ codSeccion +'</td><td>'+ codServicio +'</td><td>'+ codCapitulo +'</td><td>' + codArticulo +'</td><td>' + codNE +'</td><td>' + numberSeparator(monto) +'</td><td>' +
+                    '<a href="#" data-toggle="tooltip" data-placement="top" title="Eliminar Partida"><i class="glyphicon glyphicon-trash delete" style="color: red" ></i></a>' +
+                    '</td></tr>');
+
+                partidas.push({
+                    servicio: servicio,
+                    numeroEconomico: numeroEconomico,
+                    monto:  monto,
+                    proyectos: proyectos,
+                });
+
+                importeApagar += parseFloat(monto);
+                $('#importeAPagar').parents('div').removeClass('form-md-floating-label');
+                $('#importeAPagar').val(numberSeparator(importeApagar));
+
+
+
+                $('[data-toggle="tooltip"]').tooltip();
+                I++;
+
+                $('#servicio , #numeroEconomico').val('').select2('').select2({
+
+                    placeholder: 'Seleccione ...',
+                    allowClear: true
+                });
+
+                $('#montoPartida').val('').parents('div').addClass('form-md-floating-label');
+                $("#numeroEconomico").prop('disabled' , true);
+                $('#addProyectosExpediente').modal('hide');
+                reiniciarModal();
+            });
+
+            $('#addNumeracionEconomicaOrdenPago').on('click', function(){
+
+                var servicio = $("#servicio").val();
+                var numeroEconomico =  $("#numeroEconomico").val();
+
+                if(  servicio === '' ){
+                    alertify.alert('<strong>Debe seleccionar un servicio  para agregar una numeración económica.</strong>')
+                        .setHeader('<span class="glyphicon glyphicon-ban-circle" style="font-size: 20px"></span>' +
+                            '<h4 class="modal-title" style="display: inline-block; margin-left: 10px">Error</h4>')
+                        .set('label','Aceptar');
+                    return false;
+                }
+                if(numeroEconomico === '') {
+                    alertify.alert('<strong>Debe seleccionar un número económico para agregar una numeración económica.</strong>')
+                        .setHeader('<span class="glyphicon glyphicon-ban-circle" style="font-size: 20px"></span>' +
+                            '<h4 class="modal-title" style="display: inline-block; margin-left: 10px">Error</h4>')
+                        .set('label', 'Aceptar');
+                    return false;
+                }
+                if ( $("#montoPartida").val().trim() == '' ) {
+                    alertify.alert('<strong>Debe teclear un monto para agregar una numeración económica.</strong>')
+                        .setHeader('<span class="glyphicon glyphicon-ban-circle" style="font-size: 20px"></span>' +
+                            '<h4 class="modal-title" style="display: inline-block; margin-left: 10px">Error</h4>')
+                        .set('label','Aceptar');
+                    return false;
+                }
+
+                var monto = parseFloat($("#montoPartida").val());
+
+                for ( index = 0; index < partidas.length; index++){
+
+                    if(partidas[index] != null){
+                        if(servicio === partidas[index]['servicio'] && numeroEconomico === partidas[index]['numeroEconomico']){
+
+                            alertify.alert('<strong>Error: ya existe una numeración económica con este servicio y este número económico.</strong>')
+                                .setHeader('<span class="glyphicon glyphicon-ban-circle" style="font-size: 20px"></span>' +
+                                    '<h4 class="modal-title" style="display: inline-block; margin-left: 10px">Error</h4>')
+                                .set('label','Aceptar');
+                            return false;
+                        }
+                    }
+                }
+
+                var codServicio = '';
+                var idSeccion = '';
+                var codSeccion = '';
+                var nombreSeccion = '';
+                var codNE = '';
+                var codArticulo = '';
+                var codCapitulo = '';
+
+
+                {% for servicio in  servicios %}
+                    var idServicio = '{{ servicio.id }}';
+
+                    if (idServicio == servicio) {
+                        codServicio = '{{ servicio.codigoservicio }}';
+                        idSeccion = '{{ servicio.getSeccion().id }}';
+                        codSeccion = '{{ servicio.getSeccion().codigoseccion }}';
+                        nombreSeccion = '{{ servicio.getSeccion().nombreseccion }}';
+                    }
+                {% endfor %}
+
+                if(administradorCredito == ''){
+                    armarSelectServicio(idSeccion);
+                    administradorCredito = nombreSeccion;
+                    $('#administradorCredito').val(nombreSeccion).parents('div').removeClass('form-md-floating-label');
+                }
+
+                {% for numeroEconomico in  numerosEconomicos %}
+                    var idNumero = '{{ numeroEconomico.id }}';
+
+                    if (idNumero == numeroEconomico) {
+                        codNE = '{{ numeroEconomico.codigonumeroeconomico }}';
+                        codArticulo = '{{ numeroEconomico.getArticulo() }}';
+                        codCapitulo = '{{ numeroEconomico.getCapitulo().codigocapitulo }}';
+                    }
+                {% endfor %}
+
+                $('#numeracionEconomicaTablaOrdenPago tbody').append('<tr data-id="'+I+'"><td>'+ codSeccion +'</td><td>'+ codServicio +'</td><td>'+ codCapitulo +'</td><td>' + codArticulo +'</td><td>' + codNE +'</td><td>' + numberSeparator(monto) +'</td><td>' +
+                    '<a href="#" data-toggle="tooltip" data-placement="top" title="Eliminar Partida"><i class="glyphicon glyphicon-trash delete" style="color: red" ></i></a>' +
+                    '</td></tr>');
+
+                partidas.push({
+                    servicio: servicio,
+                    numeroEconomico: numeroEconomico,
+                    monto:  monto,
+                });
+
+                importeApagar += parseFloat(monto);
+                $('#importeAPagar').parents('div').removeClass('form-md-floating-label');
+                $('#importeAPagar').val(numberSeparator(importeApagar));
+
+
+                $('[data-toggle="tooltip"]').tooltip();
+                I++;
+
+                $('#servicio , #numeroEconomico').val('').select2('').select2({
+
+                    placeholder: 'Seleccione ...',
+                    allowClear: true
+                });
+
+                $('#montoPartida').val('');
+                $("#numeroEconomico").prop('disabled' , true);
+
+            });
+
+            //funcion que elimina una partida  del arreglo y de  la tabla
+            $('#numeracionEconomicaTablaOrdenPago tbody').on('click', '.delete', function () {
+                var row = $(this).parents('tr');
+                id = row.data('id');
+                row.fadeOut();
+                var montoResta = partidas[id]['monto'];
+                importeApagar -= parseFloat(montoResta);
+                /*partidas.splice(id,1);*/
+                delete partidas[id];
+                $('#importeAPagar').val(numberSeparator(importeApagar));
+
+                if(importeApagar == 0){
+                    administradorCredito = '';
+                    armarSelectServicio(0);
+                    $('#administradorCredito').val('').parents('div').addClass('form-md-floating-label');
+                    $('#importeAPagar').val('').parents('div').addClass('form-md-floating-label');
+                }
+            });
+
+
+            $('#btnGuardarMandamientoPago').on('click',function () {
+
+                if(importeApagar == 0){
+                    alertify.alert('<strong>Debe agregar al menos  una partida presupuestaria.</strong>')
+                        .setHeader('<span class="glyphicon glyphicon-ban-circle" style="font-size: 20px"></span>' +
+                            '<h4 class="modal-title" style="display: inline-block; margin-left: 10px">Error</h4>')
+                        .set('label','Aceptar');
+                    return false;
+                }
+
+                var errores = 0;
+                $('#numeroMandamientoPago , #fechaMandamientoPago').each(function () {
+
+                    var name = $(this).prop('name');
+                    if($(this).val().trim() == ''){
+                        $('.'+name).removeClass('hidden');
+                        errores++;
+                    }else {
+                        $('.'+name).addClass('hidden');
+                    }
+                });
+                if(errores !== 0) return false;
+
+                $(".preload").removeClass('hidden');
+
+                var pagoDirecto = 0;
+                if ($('#pagoDirecto').prop('checked')) {
+                    pagoDirecto = 1;
+                }
+
+                var mat_datos = {
+
+                    idExpediente: '{{ expediente.id }}',
+                    pagoDirecto: pagoDirecto,
+                    montoAPagar: importeApagar,
+                    numeroMandamientoPago: $("#numeroMandamientoPago").val(),
+                    fechaMandamientoPago: $("#fechaMandamientoPago").val(),
+                    nombreSeccion: administradorCredito,
+                    partidas: partidas,
+                };
+
+                $.ajax({
+                    type: "POST",
+                    dataType: "html",
+                    url: '{{ path("insertMandamientoPago") }}',
+                    data: mat_datos
+                }).done(function (data) {
+
+                    $(".preload").addClass('hidden');
+                    if(data == 'ok'){
+
+                        alertify.alert('<strong>El mandamiento de pago ha sido guardado correctamente .</strong>')
+                            .setHeader('<span class="glyphicon glyphicon-ok-circle" style="font-size: 20px"></span>' +
+                                '<h4 class="modal-title" style="display: inline-block; margin-left: 10px">Confirmacion</h4>')
+                            .set('label','Aceptar')
+                            .set('onok', function () {
+
+                                window.location.href = "{{ path(ruta) }}";
+                            });
+                    }else{
+                        alertify.alert('<strong>'+ data +'</strong>')
+                            .setHeader('<span class="glyphicon glyphicon-ban-circle" style="font-size: 20px"></span>' +
+                                '<h4 class="modal-title" style="display: inline-block; margin-left: 10px">Error</h4>')
+                            .set('label','Aceptar')
+                    }
+                });
+
+            });
+
+            $('#btnAprobarMandamientoPago').on('click',function () {
+
+                if(importeApagar == 0){
+                    alertify.alert('<strong>Debe agregar al menos  una partida presupuestaria.</strong>')
+                        .setHeader('<span class="glyphicon glyphicon-ban-circle" style="font-size: 20px"></span>' +
+                            '<h4 class="modal-title" style="display: inline-block; margin-left: 10px">Error</h4>')
+                        .set('label','Aceptar');
+                    return false;
+                }
+
+
+                $(".preload").removeClass('hidden');
+
+
+                var mat_datos = {
+
+                    idExpediente: '{{ expediente.id }}',
+                    montoAPagar: importeApagar,
+                    nombreSeccion: administradorCredito,
+                    partidas: partidas,
+                };
+
+                $.ajax({
+                    type: "POST",
+                    dataType: "html",
+                    url: '{{ path("aprobarMandamientoPago") }}',
+                    data: mat_datos
+                }).done(function (data) {
+
+                    $(".preload").addClass('hidden');
+                    if(data == 'ok'){
+
+                        alertify.alert('<strong>El mandamiento de pago sido aprobado correctamente .</strong>')
+                            .setHeader('<span class="glyphicon glyphicon-ok-circle" style="font-size: 20px"></span>' +
+                                '<h4 class="modal-title" style="display: inline-block; margin-left: 10px">Confirmacion</h4>')
+                            .set('label','Aceptar')
+                            .set('onok', function () {
+
+                                window.location.href = "{{ path(ruta) }}";
+                            });
+                    }else{
+                        alertify.alert('<strong>'+ data +'</strong>')
+                            .setHeader('<span class="glyphicon glyphicon-ban-circle" style="font-size: 20px"></span>' +
+                                '<h4 class="modal-title" style="display: inline-block; margin-left: 10px">Error</h4>')
+                            .set('label','Aceptar')
+                    }
+                });
+
+            });
+
+            $('#btnDesestimarMandamientoPago').on('click',function () {
+
+
+                $(".preload").removeClass('hidden');
+
+
+                var mat_datos = {
+
+                    idExpediente: '{{ expediente.id }}',
+                    partidas: partidas,
+                };
+
+                $.ajax({
+                    type: "POST",
+                    dataType: "html",
+                    url: '{{ path("desestimarMandamientoPago") }}',
+                    data: mat_datos
+                }).done(function (data) {
+
+                    $(".preload").addClass('hidden');
+                    if(data == 'ok'){
+
+                        alertify.alert('<strong>El mandamiento de pago ha sido desestimado.</strong>')
+                            .setHeader('<span class="glyphicon glyphicon-ok-circle" style="font-size: 20px"></span>' +
+                                '<h4 class="modal-title" style="display: inline-block; margin-left: 10px">Confirmacion</h4>')
+                            .set('label','Aceptar')
+                            .set('onok', function () {
+
+                                window.location.href = "{{ path(ruta) }}";
+                            });
+                    }else{
+                        alertify.alert('<strong>'+ data +'</strong>')
+                            .setHeader('<span class="glyphicon glyphicon-ban-circle" style="font-size: 20px"></span>' +
+                                '<h4 class="modal-title" style="display: inline-block; margin-left: 10px">Error</h4>')
+                            .set('label','Aceptar')
+                    }
+                });
+
+            });
+
+            //Orden de pago fin
+
+        });
+    </script>
+{% endblock %}

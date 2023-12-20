@@ -1,0 +1,67 @@
+<?php
+
+namespace AppBundle\Entity;
+
+use Doctrine\ORM\Mapping as ORM;
+
+/**
+ * NivelAcceso
+ *
+ * @ORM\Table(name="nivel_acceso")
+ * @ORM\Entity(repositoryClass="AppBundle\Repository\NivelAccesoRepository")
+ */
+class NivelAcceso
+{
+    /**
+     * @var integer
+     *
+     * @ORM\Column(name="id", type="integer", nullable=false)
+     * @ORM\Id
+     * @ORM\GeneratedValue(strategy="SEQUENCE")
+     * @ORM\SequenceGenerator(sequenceName="nivel_acceso_id_seq", allocationSize=1, initialValue=1)
+     */
+    private $id;
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(name="nivel", type="string", length=100, nullable=false)
+     */
+    private $nivel;
+
+
+
+    /**
+     * Get id
+     *
+     * @return integer
+     */
+    public function getId()
+    {
+        return $this->id;
+    }
+
+    /**
+     * Set nivel
+     *
+     * @param string $nivel
+     *
+     * @return NivelAcceso
+     */
+    public function setNivel($nivel)
+    {
+        $this->nivel = $nivel;
+
+        return $this;
+    }
+
+    /**
+     * Get nivel
+     *
+     * @return string
+     */
+    public function getNivel()
+    {
+        return $this->nivel;
+    }
+}

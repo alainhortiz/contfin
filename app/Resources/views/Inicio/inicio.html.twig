@@ -1,0 +1,1746 @@
+{% extends 'base.html.twig' %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link href="{{ asset('easyadmin/plantilla1/css/GraficosStyle.css') }}" rel="stylesheet">
+    <link href="{{ asset('easyadmin/tema/layout/css/themes/darkblue.css') }}" rel="stylesheet">
+    <link rel="stylesheet" href="{{ asset('easyadmin/plugins/bootstrap-datepicker/css/datepicker3.css') }}"/>
+    <link rel="stylesheet" href="{{ asset('easyadmin/tema/DataTables-1.10.10/media/css/jquery.dataTables.css') }}"/>
+{% endblock %}
+{% block info %}
+    <div class="row counters">
+        <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
+            <div class="dashboard-stat green-haze">
+                <div class="visual">
+                    <i class="fa fa-money"></i>
+                </div>
+                <div class="details">
+                    <div class="number" id="nameDisponibilidad">
+                        {% set totalDisponibilidad = totalInicial - totalDisponible %}
+                        {{ totalDisponibilidad|number_format(0, ',', '.') }} {{ tipoMoneda }}
+                    </div>
+                    <div class="desc">
+                        <strong>DISPONIBILIDAD </strong>
+                        <span class="caption-helper">(en miles de XAF)</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
+            <div class="dashboard-stat green-haze">
+                <div class="visual">
+                    <i class="fa fa-bar-chart-o"></i>
+                </div>
+                <div class="details" >
+                    <div class="number" id="nameLiquidez">
+                        {% set totalLiquidez = totalInicial - totalEjecutado %}
+                        {{ totalLiquidez|number_format(0, ',', '.') }} {{ tipoMoneda }}
+                    </div>
+                    <div class="desc">
+                        <strong>LIQUIDEZ</strong>
+                        <span class="caption-helper">(en miles de XAF)</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
+            <div class="dashboard-stat green-haze">
+                <div class="visual">
+                    <i class="fa fa-shopping-cart"></i>
+                </div>
+                <div class="details">
+                    <div class="number" data-toggle="counter-up">
+                        {{ cantidadPartidasFondos }}
+                    </div>
+                    <div class="desc">
+                        <strong>PARTIDAS EN USO</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
+            <div class="dashboard-stat green-haze">
+                <div class="visual">
+                    <i class="fa fa-globe"></i>
+                </div>
+                <div class="details">
+                    <div class="number" data-toggle="counter-up">
+                        {{ cantidadPartidasSinUso }}
+                    </div>
+                    <div class="desc">
+                        <strong>PARTIDAS SIN USO</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+{% block body %}
+    <div class="preload hidden">
+        <div class="logo"></div>
+        <div class="loader-frame">
+            <div class="loader1" id="loader1"></div>
+            <div class="loader2" id="loader2"></div>
+        </div>
+    </div>
+    <!-- BEGIN ROW -->
+    <div class="row">
+        <div class="col-lg-6 col-md-6 col-sm-6">
+            <!-- BEGIN CHART PORTLET-->
+            <div class="portlet light bordered sombreado">
+                <div class="portlet-title">
+                    <div class="caption">
+                        <span id="nameSeccion" class="caption-subject bold uppercase font-green-haze"> DISPONIBILIDAD Y LIQUIDEZ POR SECCIONES </span>
+                        <span id="nameSeccionHelp" class="caption-helper">(en miles de XAF)</span>
+                    </div>
+                    <div class="tools">
+                        <a href="#" class="reload hidden" id="btnAtrasServicios" data-placement="top" data-original-title="Reiniciar">
+                        </a>
+                    </div>
+                </div>
+                <div class="portlet-body">
+                    <div id="graficoPresupuestoSeccion" class="chart" style="height: 300px;">
+                    </div>
+                </div>
+            </div>
+            <!-- END CHART PORTLET-->
+        </div>
+        <div class="col-lg-6 col-md-6 col-sm-6">
+            <!-- BEGIN PORTLET -->
+            <!-- BEGIN Portlet PORTLET-->
+            <div class="portlet light bordered sombreado" style="height: 395px">
+                <div class="portlet-title tabbable-line">
+                    <div class="caption">
+                        <span id="nameActividades" class="caption-subject bold uppercase">
+								EXPEDIENTES POR INSTANCIA SEGUN ESTADOS </span>
+                        <span id="nameActividadesHelp" class="caption-helper"> </span>
+                    </div>
+                    <ul class="nav nav-tabs">
+                        <li class="active">
+                            <a href="#portlet_tab1" data-toggle="tab" id="one">
+                                HASTA HOY </a>
+                        </li>
+                        <li>
+                            <a href="#portlet_tab2" data-toggle="tab" id="two">
+                                PARTIDAS EN USO </a>
+                        </li>
+                        <li>
+                            <a href="#portlet_tab3" data-toggle="tab" id="three">
+                                PARTIDAS SIN USO </a>
+                        </li>
+                    </ul>
+                </div>
+                <div class="portlet-body">
+                    <div class="tab-content">
+                        <div class="tab-pane active" id="portlet_tab1">
+                            <div>
+                                <!-- BEGIN HOY TABLE PORTLET-->
+                                <div class="portlet-body flip-scroll">
+                                    <div class="row">
+                                        <div class="form-group" style="margin-left: 1% ; overflow-x: auto">
+                                            <div class="col-lg-1 col-md-1 col-sm-1" style="margin-right: 0">
+                                                <a id="btnBuscarFecha" href="javascript:;" class="btn btn-icon-only green" >
+                                                    <i class="fa fa-search"></i>
+                                                </a>
+                                            </div>
+                                            <div class="col-lg-5 col-md-5 col-sm-5" >
+                                                <div class="input-group input-large date-picker input-daterange"  data-date-format="dd-mm-yyyy">
+                                                    <input type="text" class="form-control" name="from" id="from">
+                                                    <span class="input-group-addon">hasta </span>
+                                                    <input type="text" class="form-control" name="to" id="to">
+                                                </div>
+                                                <!-- /input-group -->
+                                                <span id="clear" class="help-block">Seleccione un rango de fecha</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div id="containerResultado" class="row" style="margin: 1%">
+                                        <table id="dataActividades" class="table table-striped table-condensed flip-content">
+                                            <thead class="flip-content">
+                                            <tr>
+                                                <th>INSTANCIAS</th>
+                                                <th class="text-center">RECIBIDOS</th>
+                                                <th class="text-center">APROBADOS</th>
+                                                <th class="text-center">DESESTIMADOS</th>
+                                            </tr>
+                                            </thead>
+                                            <tbody>
+                                            {% set totalMesa, totalControlPrevio, totalDireccion, totalMinistro = 0, 0, 0, 0 %}
+                                            {% set aprobadoMesa, aprobadoControlPrevio, aprobadoDireccion, aprobadoMinistro = 0, 0, 0, 0 %}
+                                            {% set desestimadoMesa, desestimadoControlPrevio, desestimadoDireccion, desestimadoMinistro = 0, 0, 0, 0 %}
+                                            {% for actividadHoy in actividadesHoy %}
+                                                {% if  actividadHoy['id'] == '7' or actividadHoy['id'] == '8' %}
+                                                    {% set totalMesa = totalMesa + actividadHoy['total'] %}
+                                                    {% if actividadHoy['estado'] == 'DESESTIMADO' %}
+                                                        {% set desestimadoMesa = actividadHoy['total'] %}
+                                                    {% endif %}
+                                                {% elseif actividadHoy['id'] == '6' %}
+                                                    {% set totalControlPrevio = totalControlPrevio + actividadHoy['total'] %}
+                                                    {% if actividadHoy['estado'] == 'EN PROCESO' %}
+                                                        {% set aprobadoMesa = actividadHoy['total'] %}
+                                                    {% elseif actividadHoy['estado'] == 'DESESTIMADO' %}
+                                                        {% set desestimadoControlPrevio = actividadHoy['total'] %}
+                                                    {% endif %}
+                                                {% elseif actividadHoy['id'] == '4' %}
+                                                    {% set totalDireccion = totalDireccion + actividadHoy['total'] %}
+                                                    {% if actividadHoy['estado'] == 'EN PROCESO' %}
+                                                        {% set aprobadoControlPrevio = actividadHoy['total'] %}
+                                                    {% elseif actividadHoy['estado'] == 'DESESTIMADO' %}
+                                                        {% set desestimadoDireccion = actividadHoy['total'] %}
+                                                    {% endif %}
+                                                {% elseif actividadHoy['id'] == '3' %}
+                                                    {% set totalMinistro = totalMinistro + actividadHoy['total'] %}
+                                                    {% if actividadHoy['estado'] == 'EN PROCESO' %}
+                                                        {% set aprobadoDireccion = actividadHoy['total'] %}
+                                                    {% elseif actividadHoy['estado'] == 'DESESTIMADO' %}
+                                                        {% set desestimadoMinistro = actividadHoy['total'] %}
+                                                    {% endif %}
+                                                {% elseif actividadHoy['id'] == '2' %}
+                                                    {% if actividadHoy['estado'] == 'EN PROCESO' %}
+                                                        {% set aprobadoMinistro = actividadHoy['total'] %}
+                                                    {% endif %}
+                                                {% endif %}
+                                            {% endfor %}
+                                            <tr>
+                                                <td class="caption-subject bold">MESA DE ENTRADA</td>
+                                                <td class="numeric text-center">{{ totalMesa - desestimadoMesa }}</td>
+                                                <td class="numeric text-center">{{ aprobadoMesa  }}</td>
+                                                <td class="numeric text-center">{{ desestimadoMesa }}</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="caption-subject bold">CONTROL PREVIO</td>
+                                                <td class="numeric text-center">{{ totalControlPrevio - desestimadoControlPrevio }}</td>
+                                                <td class="numeric text-center">{{ aprobadoControlPrevio }}</td>
+                                                <td class="numeric text-center">{{ desestimadoControlPrevio }}</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="caption-subject bold">DIRECCIÓN</td>
+                                                <td class="numeric text-center">{{ totalDireccion - desestimadoDireccion }}</td>
+                                                <td class="numeric text-center">{{ aprobadoDireccion }}</td>
+                                                <td class="numeric text-center">{{ desestimadoDireccion }}</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="caption-subject bold">MINISTRO</td>
+                                                <td class="numeric text-center">{{ totalMinistro - desestimadoMinistro }}</td>
+                                                <td class="numeric text-center">{{ aprobadoMinistro }}</td>
+                                                <td class="numeric text-center">{{ desestimadoMinistro }}</td>
+                                            </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                                <!-- END HOY TABLE PORTLET-->
+                            </div>
+                        </div>
+                        <div class="tab-pane" id="portlet_tab2">
+                            <div>
+                                <!-- BEGIN SEMANA TABLE PORTLET-->
+                                <div class="portlet-body flip-scroll">
+                                    <div class="row">
+                                        <div class="col-lg-12 col-md-12 col-sm-12" style="margin-top: -20px">
+                                            <table id="partidasFondos" class="table table-striped table-condensed flip-content" style="width: 100%">
+                                                <thead class="flip-content">
+                                                    <tr>
+                                                        <th>SECCIÓN</th>
+                                                        <th>SERVICIO</th>
+                                                        <th class="text-center">NO. ECONÓMICO</th>
+                                                        <th class="text-center">DISPONIBILIDAD</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                {% for partidaFondo in partidasFondos %}
+                                                    <tr>
+                                                        <td>{{ partidaFondo.nombreseccion }}</td>
+                                                        <td>{{ partidaFondo.nombreservicio }}</td>
+                                                        <td class="text-center">{{ partidaFondo.codigonumeroeconomico }}</td>
+                                                        <td class="text-center">{{ partidaFondo.disponiblidad|number_format(0, ',', '.') }} {{ tipoMoneda }}</td>
+                                                    </tr>
+                                                {% endfor %}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- END SEMANA TABLE PORTLET-->
+                            </div>
+                        </div>
+                        <div class="tab-pane" id="portlet_tab3">
+                            <div>
+                                <!-- BEGIN SEMANA TABLE PORTLET-->
+                                <div class="portlet-body flip-scroll">
+                                    <div class="row">
+                                        <div class="col-lg-12 col-md-12 col-sm-12" style="margin-top: -20px">
+                                            <table id="partidasSinUso"
+                                                   class="table table-striped table-condensed flip-content"
+                                                   style="width: 100%">
+                                                <thead class="flip-content">
+                                                <tr>
+                                                    <th>SECCIÓN</th>
+                                                    <th>SERVICIO</th>
+                                                    <th class="text-center">NO. ECONÓMICO</th>
+                                                    <th class="text-center">DISPONIBILIDAD</th>
+                                                </tr>
+                                                </thead>
+                                                <tbody>
+                                                {% for partidaSinUso in partidasSinUsos %}
+                                                    <tr>
+                                                        <td>{{ partidaSinUso.nombreseccion }}</td>
+                                                        <td>{{ partidaSinUso.nombreservicio }}</td>
+                                                        <td class="text-center">{{ partidaSinUso.codigonumeroeconomico }}</td>
+                                                        <td class="text-center">{{ partidaSinUso.disponiblidad|number_format(0, ',', '.') }} {{ tipoMoneda }}</td>
+                                                    </tr>
+                                                {% endfor %}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- END SEMANA TABLE PORTLET-->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- END PORTLET -->
+        </div>
+    </div>
+    <div class="row" style="margin-top: 40px">
+        <div class="col-lg-6 col-md-6 col-sm-6">
+            <!-- BEGIN CHART PORTLET-->
+            <div class="portlet light bordered sombreado">
+                <div class="portlet-title">
+                    <div class="caption">
+                            <span id="nameEstado" class="caption-subject bold uppercase font-green-haze"> EXPEDIENTES POR ESTADOS</span>
+                    </div>
+                    <div class="tools">
+                        <a href="#" class="reload hidden" id="btnAtrasInstancia" data-placement="top" data-original-title="Reiniciar">
+                        </a>
+                    </div>
+                </div>
+                <div class="portlet-body">
+                    <div id="graficoExpedienteEstado" class="chart" style="height: 250px;">
+                    </div>
+                </div>
+            </div>
+            <!-- END CHART PORTLET-->
+        </div>
+        <div class="col-lg-6 col-md-6 col-sm-6">
+            <!-- BEGIN CHART PORTLET-->
+            <div class="portlet light bordered sombreado">
+                <div class="portlet-title">
+                    <div class="caption">
+                        <span id="nameComportamiento" class="caption-subject bold uppercase font-green-haze"> COMPORTAMIENTO DE LOS EXPEDIENTES </span>
+                        <span id="nameComportamientoHelp" class="caption-helper"> </span>
+                    </div>
+                    <div class="tools">
+                        <a href="#" class="reload hidden" id="btnAtrasMonto" data-placement="top" data-original-title="Reiniciar">
+                        </a>
+                    </div>
+                </div>
+                <div class="portlet-body">
+                    <div id="graficoExpedienteComportamiento" class="chart" style="height: 250px;">
+                    </div>
+                </div>
+            </div>
+            <!-- END CHART PORTLET-->
+        </div>
+    </div>
+    <!-- END ROW -->
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <!-- BEGIN GRAFICOS HIGHSTOCK LEVEL PLUGINS -->
+    <script src="{{ asset('easyadmin/plugins/highstock/code/highstock.js') }}"></script>
+    <script src="{{ asset('easyadmin/plugins/highstock/code/modules/annotations.js') }}"></script>
+    <script src="{{ asset('easyadmin/plugins/highstock/code/modules/exporting.js') }}"></script>
+    <script src="{{ asset('easyadmin/plugins/highstock/code/modules/export-data.js') }}"></script>
+    <script src="{{ asset('easyadmin/plugins/highstock/code/modules/export-clientside.js') }}"></script>
+    <!-- END  GRAFICOS HIGHSTOCK LEVEL PLUGINS -->
+    <!-- BEGIN MI PLANTILLA  LEVEL PLUGINS -->
+    <script src="{{ asset('easyadmin/plantilla1/js/waypoints.min.js') }}"></script>
+    <script src="{{ asset('easyadmin/plantilla1/js/counterup.min.js') }}"></script>
+    <script src="{{ asset('easyadmin/plugins/bootstrap-datepicker/js/bootstrap-datepicker.js') }}"></script>
+    <script src="{{ asset('easyadmin/tema/pages/js/components-pickers.js') }}"></script>
+    <script src="{{ asset('easyadmin/tema/DataTables-1.10.10/media/js/jquery.dataTables.js') }}"></script>
+    <!-- END GRAFICOS LEVEL PLUGINS -->
+
+    <script>
+        jQuery(document).ready(function () {
+
+            // jQuery counterUp
+            $('[data-toggle="counter-up"]').counterUp({
+                delay: 10,
+                time: 1000
+            });
+
+            $('#partidasFondos').dataTable({
+                "order": [[2, "desc"]],
+                "searching": true,
+                "lengthChange": false,
+                "lengthMenu": [[5], [5]]
+            });
+
+            $('#partidasSinUso').dataTable({
+                "order": [[2, "desc"]],
+                "searching": true,
+                "lengthChange": false,
+                "lengthMenu": [[5], [5]]
+            });
+
+            ComponentsPickers.init();
+
+            $('#btnAtrasServicios').on("click", function () {
+                graficoPresupuestoSecciones();
+                $('#nameDisponibilidad').text('{{ (totalInicial - totalDisponible)|number_format(0, ',', '.') }} {{ tipoMoneda }}');
+                $('#nameLiquidez').text('{{ (totalInicial - totalEjecutado)|number_format(0, ',', '.') }} {{ tipoMoneda }}');
+                $('#nameSeccion').text(' DISPONIBILIDAD Y LIQUIDEZ POR SECCIONES');
+                $('#nameSeccionHelp').text(' (en miles de XAF)');
+                $('#btnAtrasServicios').addClass('hidden');
+                graficoComportamientoExpedientes();
+                $('#nameComportamiento').text(' COMPORTAMIENTO DE LOS EXPEDIENTES');
+                $('#nameComportamientoHelp').text('');
+                $('#btnAtrasMonto').addClass('hidden');
+            });
+
+            $('#btnAtrasInstancia').on("click", function () {
+                graficosEstados();
+                $('#nameEstado').text(' EXPEDIENTES POR ESTADOS');
+                graficoPresupuestoSecciones();
+                $('#nameSeccion').text(' DISPONIBILIDAD Y LIQUIDEZ POR SECCIONES');
+                $('#nameSeccionHelp').text(' (en miles de XAF)');
+                $('#btnAtrasServicios').addClass('hidden');
+                $('#btnAtrasInstancia').addClass('hidden');
+                graficoComportamientoExpedientes();
+                $('#nameComportamiento').text(' COMPORTAMIENTO DE LOS EXPEDIENTES');
+                $('#nameComportamientoHelp').text('');
+                $('#btnAtrasMonto').addClass('hidden');
+            });
+
+            $('#btnAtrasMonto').on("click", function () {
+                $('#nameDisponibilidad').text('{{ (totalInicial - totalDisponible)|number_format(0, ',', '.') }} {{ tipoMoneda }}');
+                $('#nameLiquidez').text('{{ (totalInicial - totalEjecutado)|number_format(0, ',', '.') }} {{ tipoMoneda }}');
+                graficoComportamientoExpedientes();
+                $('#nameComportamiento').text(' COMPORTAMIENTO DE LOS EXPEDIENTES');
+                $('#nameComportamientoHelp').text('');
+                $('#btnAtrasMonto').addClass('hidden');
+                graficoPresupuestoSecciones();
+                $('#nameSeccion').text(' DISPONIBILIDAD Y LIQUIDEZ POR SECCIONES');
+                $('#nameSeccionHelp').text(' (en miles de XAF)');
+                $('#btnAtrasServicios').addClass('hidden');
+                graficosEstados();
+                $('#nameEstado').text(' EXPEDIENTES POR ESTADOS');
+                $('#btnAtrasInstancia').addClass('hidden');
+            });
+
+            $('a[data-toggle=tab]').on("click", function () {
+                if (this.id ==='one') {
+                    $('#nameActividades').text('EXPEDIENTES POR INSTANCIA SEGUN ESTADOS');
+                    $('#nameActividadesHelp').text('');
+                } else if (this.id ==='two') {
+                    $('#nameActividades').text('PARTIDAS EN USO');
+                    $('#nameActividadesHelp').text(' (en miles de XAF)');
+                } else if (this.id ==='three') {
+                    $('#nameActividades').text('PARTIDAS SIN USO');
+                    $('#nameActividadesHelp').text(' (en miles de XAF)');
+                }
+            });
+
+            //Declaracion de variables
+            var n;
+            var totalDisponibilidad = 0;
+            var totalLiquidez = 0;
+            var monto;
+            var presupSecciones = [];
+            var presupSeccionesDisponibilidad = [];
+            var presupSeccionesLiquidez = [];
+            var presupServicios = [];
+            var presupServiciosDisponibilidad = [];
+            var presupServiciosLiquidez = [];
+            var expedEstado = [];
+            var expedInstancia = [];
+            var expedMonto = [];
+            var expedMontoInstancia = [];
+            var expedImporteServicio = [];
+            var expedImporte = [];
+            var expedImporteDisponibilidad = [];
+            var expedImporteLiquidez = [];
+            var seccionExpediente = [];
+            var servicioExpediente = [];
+            var preordenInstancia = [];
+            var histoInstanDias = [];
+
+
+            //Arreglo para el grafico de Presupuestos por Secciones
+            {% for graficoPresupuestoSeccion in graficosPresupuestosSecciones %}
+                   presupSecciones.push('{{ graficoPresupuestoSeccion['seccion'] }}');
+                   presupSeccionesDisponibilidad.push(parseInt({{ graficoPresupuestoSeccion['disponiblidad'] }}));
+                   presupSeccionesLiquidez.push(parseInt({{ graficoPresupuestoSeccion['liquidez'] }}));
+            {% endfor %}
+
+            //Arreglo para el grafico de Expedientes por estados
+            {% for graficoExpedienteEstado in graficosExpedientesEstados %}
+                expedEstado.push({
+                    name: '{{ graficoExpedienteEstado['estado'] }}',
+                    y: parseInt('{{ graficoExpedienteEstado['cantidad'] }}')
+                });
+            {% endfor %}
+
+            function initGraficos() {
+                graficoPresupuestoSecciones();
+                graficosEstados();
+                graficoComportamientoExpedientes();
+            }
+
+            initGraficos();
+
+            //Buscar por fecha las actividades
+            $('#btnBuscarFecha').on('click', function () {
+
+                $(".preload").removeClass('hidden');
+
+                var mat_datos = {
+                    fechaInicial: $("#from").val(),
+                    fechaFinal: $("#to").val(),
+                };
+
+                $.ajax({
+                    type: "POST",
+                    dataType: "html",
+                    url: '{{ path("actividadFecha") }}',
+                    data: mat_datos
+                }).done(function (data) {
+
+                    $(".preload").addClass('hidden');
+                    if (data.indexOf('dataActividades') != -1) {
+
+                        $('#containerResultado').replaceWith(data);
+                        $('#containerResultado').css("display", "block");
+
+                    } else {
+                        alertify.alert('<strong>' + data + '</strong>')
+                            .setHeader('<span class="glyphicon glyphicon-ban-circle" style="font-size: 20px"></span>' +
+                                '<h4 class="modal-title" style="display: inline-block; margin-left: 10px">Error</h4>')
+                            .set('label', 'Aceptar')
+                    }
+                });
+            });
+
+            //Cargar los servicios de una seccion
+            function cargarPresupuestoServicios(seccion,colorSeleccionado) {
+
+                $(".preload").removeClass('hidden');
+
+                var mat_datos = {
+                    seccion: seccion,
+                };
+
+                $.ajax({
+                    type: "POST",
+                    dataType: "json",
+                    url: '{{ path("servicioSeccion") }}',
+                    data: mat_datos
+                }).done(function (data) {
+
+                    $(".preload").addClass('hidden');
+                    var obj = JSON.parse(data);
+
+                    totalDisponibilidad = 0;
+                    totalLiquidez = 0;
+                    presupServicios = [];
+                    presupServiciosDisponibilidad = [];
+                    presupServiciosLiquidez = [];
+                    for (n = 0; n < obj.length; n++) {
+                        presupServicios.push(obj[n]['servicio'])
+                        presupServiciosDisponibilidad.push({
+                            y: parseInt(obj[n]['disponiblidad']),
+                            color: colorSeleccionado
+                        });
+                        presupServiciosLiquidez.push({
+                            y: parseInt(obj[n]['liquidez']),
+                            color: colorSeleccionado
+                        });
+                        //Calcular los totales
+                        totalDisponibilidad += parseInt(obj[n]['disponiblidad']);
+                        totalLiquidez += parseInt(obj[n]['liquidez']);
+                    }
+                    $('#nameDisponibilidad').text(numberSeparator(totalDisponibilidad) + ' {{ tipoMoneda }}');
+                    $('#nameLiquidez').text(numberSeparator(totalLiquidez) + ' {{ tipoMoneda }}');
+                    $('#nameSeccion').text(' SECCIÓN: ' + seccion);
+                    graficoPresupuestoServicios();
+                });
+            }
+
+            //Cargar las instancias de un estado
+            function cargarInstancias(estado,colorSeleccionado) {
+
+                $(".preload").removeClass('hidden');
+
+                var mat_datos = {
+                    estado: estado,
+                };
+
+                $.ajax({
+                    type: "POST",
+                    dataType: "json",
+                    url: '{{ path("instanciaEstado") }}',
+                    data: mat_datos
+                }).done(function (data) {
+
+                    $(".preload").addClass('hidden');
+                    var obj = JSON.parse(data);
+
+                    expedInstancia = [];
+                    for (n = 0; n < obj.length; n++) {
+                        expedInstancia.push({
+                            name: obj[n]['instancia'],
+                            y: parseFloat(obj[n]['cantidad']),
+                            color: colorSeleccionado
+                        });
+                    }
+                    $('#nameEstado').text(' INSTANCIAS DEL ESTADO ' + estado);
+                    graficoInstancias();
+
+                });
+            }
+
+            //Cargar los montos de expedientes por tipo de comportamiento
+            function cargarMontos(tipo) {
+
+                $(".preload").removeClass('hidden');
+
+                var mat_datos = {
+                    tipo: tipo,
+                };
+
+                $.ajax({
+                    type: "POST",
+                    dataType: "json",
+                    url: '{{ path("montoExpediente") }}',
+                    data: mat_datos
+                }).done(function (data) {
+
+                    $(".preload").addClass('hidden');
+                    var obj = JSON.parse(data);
+
+                    expedMonto = [];
+                    monto = 0;
+                    for (n = 0; n < obj.length; n++) {
+                        monto = parseFloat(obj[n]['total']) /1000;
+                        expedMonto.push({
+                            name: obj[n]['numeroexpediente'],
+                            y: monto
+                        });
+                    }
+                    if (tipo == 'Mandamiento de pago') {
+                        $('#nameComportamiento').text('MONTO A PAGAR DE LOS EXPEDIENTES CON ' + tipo);
+                    } else {
+                        $('#nameComportamiento').text('MONTO SOLICITADO POR LOS EXPEDIENTES ' + tipo);
+                    }
+                    $('#nameComportamientoHelp').text(' (en miles de XAF)');
+                    graficoMontosExpedientes(tipo);
+
+                });
+            }
+
+            //Cargar los montos de expedientes por la instancia seleccionada
+            function cargarMontosInstancia(instancia) {
+
+                $(".preload").removeClass('hidden');
+
+                var mat_datos = {
+                    instancia: instancia,
+                };
+
+                $.ajax({
+                    type: "POST",
+                    dataType: "json",
+                    url: '{{ path("expedienteInstancia") }}',
+                    data: mat_datos
+                }).done(function (data) {
+
+                    $(".preload").addClass('hidden');
+                    var obj = JSON.parse(data);
+
+                    monto = 0;
+                    expedMontoInstancia = [];
+                    for (n = 0; n < obj.length; n++) {
+                        monto = parseFloat(obj[n]['total']) /1000;
+                        expedMontoInstancia.push({
+                            name: obj[n]['numeroexpediente'],
+                            y: monto
+                        });
+                    }
+                    $('#nameComportamiento').text('EXPEDIENTES EN ' + instancia);
+                    $('#nameComportamientoHelp').text(' (en miles de XAF)');
+
+                    graficoMontosExpedientesInstancia();
+
+                });
+            }
+
+            //Cargar los importes solicitados por servicios de un expediente
+            function cargarImporteServicios(expediente,colorSeleccionado) {
+
+                $(".preload").removeClass('hidden');
+
+                var mat_datos = {
+                    expediente: expediente,
+                };
+
+                $.ajax({
+                    type: "POST",
+                    dataType: "json",
+                    url: '{{ path("expedienteImporteServicio") }}',
+                    data: mat_datos
+                }).done(function (data) {
+
+                    $(".preload").addClass('hidden');
+                    var obj = JSON.parse(data);
+
+                    totalDisponibilidad = 0;
+                    totalLiquidez = 0;
+                    expedImporteServicio = [];
+                    expedImporte = [];
+                    expedImporteDisponibilidad = [];
+                    expedImporteLiquidez = [];
+                    for (n = 0; n < obj.length; n++) {
+                        expedImporteServicio.push(obj[n]['servicio'])
+                        expedImporte.push(parseInt(obj[n]['importe']));
+                        expedImporteDisponibilidad.push(parseInt(obj[n]['disponiblidad']));
+                        expedImporteLiquidez.push(parseInt(obj[n]['liquidez']));
+                        //Calcular los totales
+                        totalDisponibilidad += parseInt(obj[n]['disponiblidad']);
+                        totalLiquidez += parseInt(obj[n]['liquidez']);
+                    }
+                    $('#nameSeccion').text('DISPONIBILIDAD, LIQUIDEZ E IMPORTES SOLICITADOS POR EL EXPEDIENTE NO. ' + expediente);
+                    graficoImporteServicios();
+                    $('#nameDisponibilidad').text(numberSeparator(totalDisponibilidad) + ' {{ tipoMoneda }}');
+                    $('#nameLiquidez').text(numberSeparator(totalLiquidez) + ' {{ tipoMoneda }}');
+                });
+            }
+
+            //Cargar las instancias por las que ha transitado un expediente
+            function cargarInstanciasExpediente(expediente) {
+
+                $(".preload").removeClass('hidden');
+
+                var mat_datos = {
+                    expediente: expediente,
+                };
+
+                $.ajax({
+                    type: "POST",
+                    dataType: "json",
+                    url: '{{ path("instanciaExpediente") }}',
+                    data: mat_datos
+                }).done(function (data) {
+
+                    $(".preload").addClass('hidden');
+                    var obj = JSON.parse(data);
+
+                    preordenInstancia =[];
+                    for (n = 0; n < obj.length; n++) {
+                        preordenInstancia.push([obj[n]['instancia'], obj[n]['estado']])
+                    }
+
+                    histoInstanDias = [];
+                    for (n = 0; n < obj.length; n++) {
+                        if (n === 0){
+                            histoInstanDias.push([
+                                moment(obj[n]['fecha']['date']).format('YYYY-MM-DD'),n
+                            ])
+                        } else {
+                            var fecha1 = new Date( moment(obj[n]['fecha']['date']).format('YYYY-MM-DD'));
+                            var fecha2 = new Date( moment(obj[n-1]['fecha']['date']).format('YYYY-MM-DD'));
+                            histoInstanDias.push([
+                                moment(obj[n]['fecha']['date']).format('YYYY-MM-DD'),dateDiff(fecha1,fecha2)
+                            ])
+                        }
+                    }
+                    $('#nameEstado').text(' HISTÓRICO DE INSTANCIAS DEL EXPEDIENTE NO. ' + expediente);
+                    graficoInstanciasExpedientes();
+
+                });
+            }
+
+            //Cargar los expedientes con el total de importes solicitados de una seccion
+            function cargarSeccionExpedientes(seccion, colorSeleccionado) {
+
+                $(".preload").removeClass('hidden');
+
+                var mat_datos = {
+                    seccion: seccion,
+                };
+
+                $.ajax({
+                    type: "POST",
+                    dataType: "json",
+                    url: '{{ path("seccionExpediente") }}',
+                    data: mat_datos
+                }).done(function (data) {
+
+                    $(".preload").addClass('hidden');
+                    var obj = JSON.parse(data);
+
+                    seccionExpediente = [];
+                    for (n = 0; n < obj.length; n++) {
+                        seccionExpediente.push({
+                            name: obj[n]['numeroexpediente'],
+                            y: parseInt(obj[n]['total']/1000),
+                            color: colorSeleccionado
+                        });
+                    }
+                    graficoSeccionExpedientes();
+                    $('#nameComportamiento').text(' EXPEDIENTES DE LA SECCION ' + seccion);
+                    $('#nameComportamientoHelp').text(' (en miles de XAF)');
+                });
+            }
+
+            //Cargar los expedientes con el importes solicitados de un servicio
+            function cargarServicioExpedientes(servicio,colorSeleccionado) {
+
+                $(".preload").removeClass('hidden');
+
+                var mat_datos = {
+                    servicio: servicio,
+                };
+
+                $.ajax({
+                    type: "POST",
+                    dataType: "json",
+                    url: '{{ path("servicioExpediente") }}',
+                    data: mat_datos
+                }).done(function (data) {
+
+                    $(".preload").addClass('hidden');
+                    var obj = JSON.parse(data);
+
+                    servicioExpediente = [];
+                    for (n = 0; n < obj.length; n++) {
+                        servicioExpediente.push({
+                            name: obj[n]['numeroexpediente'],
+                            y: parseFloat(obj[n]['cantidad']/1000),
+                            color: colorSeleccionado
+                        });
+                    }
+                    console.log(servicioExpediente);
+                    graficoServiciosExpedientes();
+                    $('#nameComportamiento').text(' EXPEDIENTES DEL SERVICIO ' + servicio);
+                    $('#nameComportamientoHelp').text(' (en miles de XAF)');
+                });
+
+            }
+
+            //Grafico general de expedientes por secciones
+            function graficoPresupuestoSecciones() {
+                var valorMax = presupSecciones.length - 1;
+                var valorScrollbar = false;
+                if (presupSecciones.length > 4) {
+                    valorMax = 4;
+                    valorScrollbar = true;
+                }
+                Highcharts.chart('graficoPresupuestoSeccion', {
+                    chart: {
+                        type: 'column'
+                    },
+                    title: {
+                        text: null
+                    },
+                    exporting: {
+                        enabled: false,
+                        buttons: {
+                            contextButton: {
+                                menuItems: [{
+                                    text: 'Exportar a EXCEL',
+                                    title: 'Exportar a EXCEL',
+                                    textKey: 'downloadXLS',
+                                    fallbackExportServer: false,
+                                    filename: 'SECCIONES',
+                                    onclick: function () {
+                                        this.exportChart({
+                                            type: 'application/vnd.ms-excel'
+                                        });
+                                    }
+                                }]
+                            }
+                        }
+                    },
+                    scrollbar: {
+                        enabled: valorScrollbar
+                    },
+                    xAxis: {
+                        categories : presupSecciones,
+                        min: 0,
+                        max: valorMax,
+                        useHTML: true
+                    },
+                    yAxis: {
+                        title: {
+                            text: 'Disponiblidad    -    Liquidez',
+                            align: 'middle',
+                            useHTML: true
+                        },
+                        stackLabels: {
+                            enabled: true,
+                            style: {
+                                fontWeight: 'bold'
+                            }
+                        }
+                    },
+                    legend: {
+                        enabled: false
+                    },
+                    plotOptions: {
+                        column: {
+                            stacking: 'percent',
+                            dataLabels: {
+                                enabled: true
+                            }
+                        },
+                        series: {
+                            borderWidth: 0,
+                            allowPointSelect: true,
+                            cursor: 'pointer',
+                            dataLabels: {
+                                enabled: true,
+                                formatter : function () {
+                                    return Highcharts.numberFormat(this.y,0,',','.') + ' {{ tipoMoneda }}';
+                                }
+                            }
+                        }
+                    },
+                    tooltip: {
+                        headerFormat: '<span style="font-size:11px"><b>{point.x}</b></span><br>',
+                        pointFormat: '<span style="color:{point.color}">{series.name}</span>: <b>{point.y:,.0f}</b>' + ' {{ tipoMoneda }}'
+                    },
+
+                    "series": [
+                        {
+                            "name": "Liquidez",
+                            "data": presupSeccionesLiquidez,
+                            "colorByPoint": true,
+                            events: {
+                                click: function (oEvent) {
+                                    cargarPresupuestoServicios(oEvent.point.category, oEvent.point.color);
+                                    cargarSeccionExpedientes(oEvent.point.category, oEvent.point.color);
+                                    $('#btnAtrasServicios').removeClass('hidden');
+                                    $('#btnAtrasMonto').removeClass('hidden');
+                                }
+                            }
+                        },
+                        {
+                            "name": "Disponibilidad",
+                            "colorByPoint": true,
+                            "data": presupSeccionesDisponibilidad,
+                            events: {
+                                click: function (oEvent) {
+                                    cargarPresupuestoServicios(oEvent.point.category, oEvent.point.color);
+                                    cargarSeccionExpedientes(oEvent.point.category, oEvent.point.color);
+                                    $('#btnAtrasServicios').removeClass('hidden');
+                                    $('#btnAtrasMonto').removeClass('hidden');
+                                }
+                            }
+                        }
+                    ],
+                    responsive:{
+                        rules: [{
+                            condition:{
+                                maxWidth: 800
+                            },
+                            chartOptions: {
+                                scrollbar: {
+                                    enabled: true
+                                },
+                                xAxis: {
+                                    min: 0,
+                                    max: 1,
+                                    useHTML: true
+                                }
+                            }
+                        }]
+                    }
+                });
+            }
+
+            //Grafico general 2do Nivel de expedientes por servicios
+            function graficoPresupuestoServicios() {
+                var valorMax = presupServicios.length - 1;
+                var valorScrollbar = false;
+                if (presupServicios.length > 4) {
+                    valorMax = 4;
+                    valorScrollbar = true;
+                }
+                Highcharts.chart('graficoPresupuestoSeccion', {
+                    chart: {
+                        type: 'column'
+                    },
+                    title: {
+                        text: null
+                    },
+                    exporting: {
+                        enabled: false,
+                        buttons: {
+                            contextButton: {
+                                menuItems: [{
+                                    text: 'Exportar a EXCEL',
+                                    title: 'Exportar a EXCEL',
+                                    textKey: 'downloadXLS',
+                                    fallbackExportServer: false,
+                                    filename: 'SECCIONES',
+                                    onclick: function () {
+                                        this.exportChart({
+                                            type: 'application/vnd.ms-excel'
+                                        });
+                                    }
+                                }]
+                            }
+                        }
+                    },
+                    scrollbar: {
+                        enabled: valorScrollbar
+                    },
+                    xAxis: {
+                        categories : presupServicios,
+                        min: 0,
+                        max: valorMax,
+                        useHTML: true
+                    },
+                    yAxis: {
+                        title: {
+                            text: 'Disponiblidad    -    Liquidez',
+                            align: 'middle',
+                            useHTML: true
+                        },
+                        stackLabels: {
+                            enabled: true,
+                            style: {
+                                fontWeight: 'bold'
+                            }
+                        }
+                    },
+                    legend: {
+                        enabled: false
+                    },
+                    plotOptions: {
+                        column: {
+                            stacking: 'percent',
+                            dataLabels: {
+                                enabled: true
+                            }
+                        },
+                        series: {
+                            borderWidth: 0,
+                            allowPointSelect: true,
+                            cursor: 'pointer',
+                            dataLabels: {
+                                enabled: true,
+                                formatter : function () {
+                                    return Highcharts.numberFormat(this.y,0,',','.') + ' {{ tipoMoneda }}';
+                                }
+                            }
+                        }
+                    },
+                    tooltip: {
+                        headerFormat: '<span style="font-size:11px"><b>{point.x}</b></span><br>',
+                        pointFormat: '<span style="color:{point.color}">{series.name}</span>: <b>{point.y:,.0f}</b>' + ' {{ tipoMoneda }}'
+                    },
+
+                    "series": [
+                        {
+                            "name": "Liquidez",
+                            "data": presupServiciosLiquidez,
+                            events: {
+                                click: function (oEvent) {
+                                    cargarServicioExpedientes(oEvent.point.category,oEvent.point.color);
+                                    $('#btnAtrasMonto').removeClass('hidden');
+                                }
+                            }
+                        },
+                        {
+                            "name": "Disponibilidad",
+                            "data": presupServiciosDisponibilidad,
+                            events: {
+                                click: function (oEvent) {
+                                    cargarServicioExpedientes(oEvent.point.category,oEvent.point.color);
+                                    $('#btnAtrasMonto').removeClass('hidden');
+                                }
+                            }
+                        }
+                    ],
+                    responsive:{
+                    rules: [{
+                        condition:{
+                            maxWidth: 800
+                        },
+                        chartOptions: {
+                            scrollbar: {
+                                enabled: true
+                            },
+                            xAxis: {
+                                min: 0,
+                                max: 1,
+                                useHTML: true
+                            }
+                        }
+                    }]
+                }
+                });
+            }
+
+            //Grafico 3er Nivel de importe de un expediente por servicios
+            function graficoImporteServicios() {
+                var valorMax = expedImporteServicio.length - 1;
+                var valorScrollbar = false;
+                if (expedImporteServicio.length > 4) {
+                    valorMax = 4;
+                    valorScrollbar = true;
+                }
+                Highcharts.chart('graficoPresupuestoSeccion', {
+                    chart: {
+                        type: 'bar'
+                    },
+                    title: {
+                        text: null
+                    },
+                    exporting: {
+                        enabled: false,
+                        buttons: {
+                            contextButton: {
+                                menuItems: [{
+                                    text: 'Exportar a EXCEL',
+                                    title: 'Exportar a EXCEL',
+                                    textKey: 'downloadXLS',
+                                    fallbackExportServer: false,
+                                    filename: 'SECCIONES',
+                                    onclick: function () {
+                                        this.exportChart({
+                                            type: 'application/vnd.ms-excel'
+                                        });
+                                    }
+                                }]
+                            }
+                        }
+                    },
+                    scrollbar: {
+                        enabled: valorScrollbar
+                    },
+                    xAxis: {
+                        categories : expedImporteServicio,
+                        min: 0,
+                        max: valorMax,
+                        useHTML: true
+                    },
+                    yAxis: {
+                        title: {
+                            text: null
+                        },
+                        stackLabels: {
+                            enabled: true,
+                            style: {
+                                fontWeight: 'bold',
+                                color: ( // theme
+                                    Highcharts.defaultOptions.title.style &&
+                                    Highcharts.defaultOptions.title.style.color
+                                ) || 'gray'
+                            }
+                        }
+                    },
+                    legend: {
+                        enabled: false
+                    },
+                    plotOptions: {
+                        column: {
+                            stacking: 'percent',
+                            dataLabels: {
+                                enabled: true
+                            }
+                        },
+                        series: {
+                            borderWidth: 0,
+                            allowPointSelect: true,
+                            cursor: 'pointer',
+                            dataLabels: {
+                                enabled: true,
+                                formatter : function () {
+                                    return Highcharts.numberFormat(this.y,0,',','.') + ' {{ tipoMoneda }}';
+                                }
+                            }
+                        }
+                    },
+                    tooltip: {
+                        headerFormat: '<span style="font-size:11px"><b>{point.x}</b></span><br>',
+                        pointFormat: '<span style="color:{point.color}">{series.name}</span>: <b>{point.y:,.0f}</b>' + ' {{ tipoMoneda }}'
+                    },
+
+                    "series": [
+                        {
+                            "name": "Liquidez",
+                            "data": expedImporteLiquidez,
+                            events: {
+                                click: function (oEvent) {
+                                    $('#btnAtrasMonto').removeClass('hidden');
+                                }
+                            }
+                        },
+                        {
+                            "name": "Disponibilidad",
+                            "data": expedImporteDisponibilidad,
+                            events: {
+                                click: function (oEvent) {
+                                    $('#btnAtrasMonto').removeClass('hidden');
+                                }
+                            }
+                        },
+                        {
+                            "name": "Monto",
+                            "data": expedImporte,
+                            events: {
+                                click: function (oEvent) {
+                                    $('#btnAtrasMonto').removeClass('hidden');
+                                }
+                            }
+                        }
+                    ],
+                });
+            }
+
+            //Grafico general de estados de expedientes
+            function graficosEstados() {
+                Highcharts.chart('graficoExpedienteEstado', {
+                    chart: {
+                        type: 'column'
+                    },
+                    title: {
+                        text: null
+                    },
+                    exporting: {
+                        enabled: false
+                    },
+                    xAxis: {
+                        type: 'category',
+                        useHTML: true
+                    },
+                    yAxis: {
+                        title: {
+                            text: 'Cantidad de expedientes'
+                        }
+
+                    },
+                    legend: {
+                        enabled: false
+                    },
+                    plotOptions: {
+                        series: {
+                            borderWidth: 0,
+                            allowPointSelect: true,
+                            cursor: 'pointer',
+                            dataLabels: {
+                                enabled: true,
+                                format: '{point.y:.0f}'
+                            }
+                        }
+                    },
+
+                    tooltip: {
+                        headerFormat: '<span style="font-size:11px">{series.name}</span><br>',
+                        pointFormat: '<span style="color:{point.color}">{point.name}</span>: <b>{point.y:.0f}</b> expedientes<br/>'
+                    },
+
+                    "series": [
+                        {
+                            "name": "Estados",
+                            "colorByPoint": true,
+                            "data": expedEstado,
+                            events: {
+                                click: function (oEvent) {
+                                    cargarInstancias(oEvent.point.name,oEvent.point.color);
+                                    $('#btnAtrasInstancia').removeClass('hidden');
+                                }
+                            }
+                        }
+                    ],
+                });
+            }
+
+            //Grafico de 2do Nivel expedientes por instancias
+            function graficoInstancias() {
+                Highcharts.chart('graficoExpedienteEstado', {
+                    chart: {
+                        type: 'column'
+                    },
+                    title: {
+                        text: null
+                    },
+                    exporting: {
+                        enabled: false
+                    },
+                    xAxis: {
+                        type: 'category',
+                        useHTML : true
+                    },
+                    yAxis: {
+                        allowDecimals: false,
+                        title: {
+                            text: 'Cantidad de expedientes'
+                        }
+
+                    },
+                    legend: {
+                        enabled: false
+                    },
+                    plotOptions: {
+                        series: {
+                            borderWidth: 0,
+                            allowPointSelect: true,
+                            cursor: 'pointer',
+                            dataLabels: {
+                                enabled: true,
+                                format: '{point.y:.0f}'
+                            }
+                        }
+                    },
+
+                    tooltip: {
+                        headerFormat: '<span style="font-size:11px">{series.name}</span><br>',
+                        pointFormat: '<span style="color:{point.color}">{point.name}</span>: <b>{point.y:.0f}</b> expedientes<br/>'
+                    },
+
+                    "series": [
+                        {
+                            "name": "Instancias",
+                            "colorByPoint": true,
+                            "data": expedInstancia,
+                            events: {
+                                click: function (oEvent) {
+                                    cargarMontosInstancia(oEvent.point.name);
+                                    $('#btnAtrasMonto').removeClass('hidden');
+                                }
+                            }
+                        }
+                    ],
+                });
+            }
+
+            //Grafico general 3er Nivel de expedientes por montos de una instancia
+            function graficoMontosExpedientesInstancia() {
+                var valorMax = expedMontoInstancia.length - 1;
+                var valorScrollbar = false;
+                if (expedMontoInstancia.length > 5) {
+                    valorMax = 4;
+                    valorScrollbar = true;
+                }
+                Highcharts.chart('graficoExpedienteComportamiento', {
+                    chart: {
+                        type: 'column'
+                    },
+                    title: {
+                        text: null
+                    },
+                    exporting: {
+                        enabled: false
+                    },
+                    scrollbar: {
+                        enabled: valorScrollbar
+                    },
+                    xAxis: {
+                        type: 'category',
+                        min: 0,
+                        max: valorMax,
+                        useHTML : true
+                    },
+                    yAxis: {
+                        title: {
+                            text: 'Montos solicitados'
+                        }
+
+                    },
+                    legend: {
+                        enabled: false
+                    },
+                    plotOptions: {
+                        series: {
+                            borderWidth: 0,
+                            allowPointSelect: true,
+                            cursor: 'pointer',
+                            dataLabels: {
+                                enabled: true,
+                                formatter : function () {
+                                    return Highcharts.numberFormat(this.y,0,',','.') + ' {{ tipoMoneda }}';
+                                }
+                            }
+                        }
+                    },
+                    tooltip: {
+                        headerFormat: '<span style="font-size:11px">{series.name}</span><br>',
+                        pointFormat: '<span style="color:{point.color}">{point.name}</span>' + ' monto solicitado ' + '<b>{point.y:0f}</b>' + ' {{ tipoMoneda }}'
+                    },
+
+                    "series": [
+                        {
+                            "name": "Expediente",
+                            "colorByPoint": true,
+                            "data": expedMontoInstancia,
+                            events: {
+                                click: function (oEvent) {
+                                    cargarImporteServicios(oEvent.point.name,oEvent.point.color);
+                                    $('#btnAtrasServicios').removeClass('hidden');
+                                    cargarInstanciasExpediente(oEvent.point.name);
+                                    $('#btnAtrasInstancia').removeClass('hidden');
+                                }
+                            }
+                        }
+                    ],
+                    responsive:{
+                    rules: [{
+                        condition:{
+                            maxWidth: 800
+                        },
+                        chartOptions: {
+                            scrollbar: {
+                                enabled: true
+                            },
+                            xAxis: {
+                                min: 0,
+                                max: 1,
+                                useHTML: true
+                            }
+                        }
+                    }]
+                }
+                });
+            }
+
+            //Grafico 3er Nivel instancias por expediente
+            function graficoInstanciasExpedientes() {
+                Highcharts.chart('graficoExpedienteEstado', {
+                    chart: {
+                        type: 'area'
+                    },
+                    title: {
+                        text: null
+                    },
+                    xAxis: {
+                        categories: preordenInstancia,
+                        tickmarkPlacement: 'on',
+                        title: {
+                            enabled: false
+                        }
+                    },
+                    yAxis: {
+                        allowDecimals: false,
+                        title: {
+                            text: 'Cantidad de días'
+                        }
+                    },
+                    tooltip: {
+                        split: true,
+                        valueSuffix: ' días'
+                    },
+                    plotOptions: {
+                        area: {
+                            stacking: 'normal',
+                            lineColor: '#597581',
+                            lineWidth: 1,
+                            marker: {
+                                lineWidth: 1,
+                                lineColor: '#1d262a'
+                            }
+                        }
+                    },
+                    series: [{
+                        name: 'Tiempo transcurrido',
+                        data: histoInstanDias,
+                        color: '#26a69a'
+                    }]
+                });
+            }
+
+            //Grafico general del comportamiento de expedientes
+            function graficoComportamientoExpedientes() {
+                Highcharts.chart('graficoExpedienteComportamiento', {
+                    chart: {
+                        plotBackgroundColor: null,
+                        plotBorderWidth: null,
+                        plotShadow: false,
+                        type: 'pie'
+                    },
+                    title: {
+                        text: null
+                    },
+                    exporting: {
+                        enabled: false
+                    },
+                    tooltip: {
+                        pointFormat: '<span style="color:{point.color}">\u25CF</span> <b> {point.name}</b><br/>' +
+                            'Cantidad de expedientes: <b>{point.y}</b><br/>' +
+                            'que representa el <b>{point.percentage:.1f}%</b>'
+                    },
+                    legend: {
+                        layaout: 'horizontal',
+                        alignColumns: false,
+                        align: 'center',
+                        margin: -10
+                    },
+                    plotOptions: {
+                        pie: {
+                            dataLabels: {
+                                enabled: true,
+                                format: '<b>{point.name}</b>: {point.y:.0f}',
+                            }
+                        }
+                    },
+                    series: [{
+                        minPointSize: 10,
+                        zMin: 0,
+                        allowPointSelect: true,
+                        cursor: 'pointer',
+                        dataLabels: {
+                            enabled: false
+                        },
+                        showInLegend: true,
+                        name: 'Expedientes',
+                        colorByPoint: true,
+                        data: [{
+                            name: 'Activos',
+                            y: parseInt('{{ totalActivos }}')
+                        }, {
+                            name: 'Priorizados',
+                            y: parseInt('{{ totalPrioridad }}')
+                        }, {
+                            name: 'Mandamiento de pago',
+                            y: parseInt('{{ totalMandamientoPago }}')
+                        }],
+                        events: {
+                            click: function (oEvent) {
+                                cargarMontos(oEvent.point.name);
+                                $('#btnAtrasMonto').removeClass('hidden');
+                            }
+                        }
+                    }]
+                });
+            }
+
+            //Grafico general 2do Nivel de expedientes por montos
+            function graficoMontosExpedientes(tipo) {
+                var valorMax = expedMonto.length - 1;
+                var valorScrollbar = false;
+                if (expedMonto.length > 5) {
+                    valorMax = 4;
+                    valorScrollbar = true;
+                }
+                var mostrar;
+
+                if (tipo == 'Mandamiento de pago') {
+                    mostrar ='monto a pagar';
+                } else {
+                    mostrar ='monto solicitado';
+                }
+                Highcharts.chart('graficoExpedienteComportamiento', {
+                    chart: {
+                        type: 'column'
+                    },
+                    title: {
+                        text: null
+                    },
+                    exporting: {
+                        enabled: false
+                    },
+                    scrollbar: {
+                        enabled: valorScrollbar
+                    },
+                    xAxis: {
+                        type: 'category',
+                        min: 0,
+                        max: valorMax,
+                        useHTML : true
+                    },
+                    yAxis: {
+                        title: {
+                            text: 'Montos solicitados'
+                        }
+
+                    },
+                    legend: {
+                        enabled: false
+                    },
+                    plotOptions: {
+                        series: {
+                            borderWidth: 0,
+                            allowPointSelect: true,
+                            cursor: 'pointer',
+                            dataLabels: {
+                                enabled: true,
+                                formatter : function () {
+                                    return Highcharts.numberFormat(this.y,0,',','.') + ' {{ tipoMoneda }}';
+                                }
+                            }
+                        }
+                    },
+                    tooltip: {
+                        headerFormat: '<span style="font-size:11px">{series.name}</span><br>',
+                        pointFormat:  '<span style="color:{point.color}">{point.name}</span> ' + mostrar  + ' <b>{point.y:0f}</b>' + ' {{ tipoMoneda }}'
+                    },
+
+                    "series": [
+                        {
+                            "name": "Expediente",
+                            "colorByPoint": true,
+                            "data": expedMonto,
+                            events: {
+                                click: function (oEvent) {
+                                    cargarImporteServicios(oEvent.point.name,oEvent.point.color);
+                                    $('#btnAtrasServicios').removeClass('hidden');
+                                    cargarInstanciasExpediente(oEvent.point.name);
+                                    $('#btnAtrasInstancia').removeClass('hidden');
+                                }
+                            }
+                        }
+                    ],
+                });
+            }
+
+            //Grafico general 3er Nivel del total de importes solicitados de los expedientes por una seccion seleccionada
+            function graficoSeccionExpedientes() {
+                var valorMax = seccionExpediente.length - 1;
+                var valorScrollbar = false;
+                if (seccionExpediente.length > 5) {
+                    valorMax = 4;
+                    valorScrollbar = true;
+                }
+                Highcharts.chart('graficoExpedienteComportamiento', {
+                    chart: {
+                        type: 'column'
+                    },
+                    title: {
+                        text: null
+                    },
+                    exporting: {
+                        enabled: false
+                    },
+                    scrollbar: {
+                        enabled: valorScrollbar
+                    },
+                    xAxis: {
+                        type: 'category',
+                        min: 0,
+                        max: valorMax,
+                        useHTML : true
+                    },
+                    yAxis: {
+                        title: {
+                            text: 'Montos solicitados'
+                        }
+
+                    },
+                    legend: {
+                        enabled: false
+                    },
+                    plotOptions: {
+                        series: {
+                            borderWidth: 0,
+                            allowPointSelect: true,
+                            cursor: 'pointer',
+                            dataLabels: {
+                                enabled: true,
+                                formatter : function () {
+                                    return Highcharts.numberFormat(this.y,0,',','.') + ' {{ tipoMoneda }}';
+                                }
+                            }
+                        }
+                    },
+                    tooltip: {
+                        headerFormat: '<span style="font-size:11px">{series.name}</span><br>',
+                        pointFormat: '<span style="color:{point.color}">{point.name}</span>' + ' monto solicitado ' + '<b>{point.y:,.0f}</b>' + ' {{ tipoMoneda }}'
+                    },
+
+                    "series": [
+                        {
+                            "name": "Expediente",
+                            "colorByPoint": true,
+                            "data": seccionExpediente,
+                            events: {
+                                click: function (oEvent) {
+                                    cargarInstanciasExpediente(oEvent.point.name);
+                                    $('#btnAtrasInstancia').removeClass('hidden');
+                                }
+                            }
+                        }
+                    ],
+                });
+            }
+
+            //Grafico general 4to Nivel que muestra el importes solicitados de los expedientes de servicio seleccionada
+            function graficoServiciosExpedientes() {
+                var valorMax = servicioExpediente.length - 1;
+                var valorScrollbar = false;
+                if (servicioExpediente.length > 5) {
+                    valorMax = 4;
+                    valorScrollbar = true;
+                }
+                Highcharts.chart('graficoExpedienteComportamiento', {
+                    chart: {
+                        type: 'column'
+                    },
+                    title: {
+                        text: null
+                    },
+                    exporting: {
+                        enabled: false
+                    },
+                    scrollbar: {
+                        enabled: valorScrollbar
+                    },
+                    xAxis: {
+                        type: 'category',
+                        min: 0,
+                        max: valorMax,
+                        useHTML : true
+                    },
+                    yAxis: {
+                        title: {
+                            text: 'Montos solicitados'
+                        }
+
+                    },
+                    legend: {
+                        enabled: false
+                    },
+                    plotOptions: {
+                        series: {
+                            borderWidth: 0,
+                            allowPointSelect: true,
+                            cursor: 'pointer',
+                            dataLabels: {
+                                enabled: true,
+                                formatter : function () {
+                                    return Highcharts.numberFormat(this.y,0,',','.') + ' {{ tipoMoneda }}';
+                                }
+                            }
+                        }
+                    },
+                    tooltip: {
+                        headerFormat: '<span style="font-size:11px">{series.name}</span><br>',
+                        pointFormat: '<span style="color:{point.color}">{point.name}</span>' + ' monto solicitado ' + '<b>{point.y:,.0f}</b>' + ' {{ tipoMoneda }}'
+                    },
+
+                    "series": [
+                        {
+                            "name": "Expediente",
+                            "colorByPoint": true,
+                            "data": servicioExpediente,
+                            events: {
+                                click: function (oEvent) {
+                                    cargarInstanciasExpediente(oEvent.point.name);
+                                    $('#btnAtrasInstancia').removeClass('hidden');
+                                }
+                            }
+                        }
+                    ],
+                });
+            }
+
+        });
+    </script>
+
+{% endblock %}

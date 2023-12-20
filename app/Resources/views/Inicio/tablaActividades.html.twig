@@ -1,0 +1,74 @@
+<div id="containerResultado" class="row" style="margin: 1%">
+    <table id="dataActividades" class="table table-striped table-condensed flip-content">
+        <thead class="flip-content">
+        <tr>
+            <th>INSTANCIAS</th>
+            <th class="text-center">RECIBIDOS</th>
+            <th class="text-center">APROBADOS</th>
+            <th class="text-center">DESESTIMADOS</th>
+        </tr>
+        </thead>
+        <tbody style="overflow-y: auto">
+        {% set totalMesa, totalControlPrevio, totalDireccion, totalMinistro = 0, 0, 0, 0 %}
+        {% set aprobadoMesa, aprobadoControlPrevio, aprobadoDireccion, aprobadoMinistro = 0, 0, 0, 0 %}
+        {% set desestimadoMesa, desestimadoControlPrevio, desestimadoDireccion, desestimadoMinistro = 0, 0, 0, 0 %}
+        {% for actividadHoy in actividadesHoy %}
+            {% if  actividadHoy['id'] == '7' or actividadHoy['id'] == '8' %}
+                {% set totalMesa = totalMesa + actividadHoy['total'] %}
+                {% if actividadHoy['estado'] == 'DESESTIMADO' %}
+                    {% set desestimadoMesa = actividadHoy['total'] %}
+                {% endif %}
+            {% elseif actividadHoy['id'] == '6' %}
+                {% set totalControlPrevio = totalControlPrevio + actividadHoy['total'] %}
+                {% if actividadHoy['estado'] == 'EN PROCESO' %}
+                    {% set aprobadoMesa = actividadHoy['total'] %}
+                {% elseif actividadHoy['estado'] == 'DESESTIMADO' %}
+                    {% set desestimadoControlPrevio = actividadHoy['total'] %}
+                {% endif %}
+            {% elseif actividadHoy['id'] == '4' %}
+                {% set totalDireccion = totalDireccion + actividadHoy['total'] %}
+                {% if actividadHoy['estado'] == 'EN PROCESO' %}
+                    {% set aprobadoControlPrevio = actividadHoy['total'] %}
+                {% elseif actividadHoy['estado'] == 'DESESTIMADO' %}
+                    {% set desestimadoDireccion = actividadHoy['total'] %}
+                {% endif %}
+            {% elseif actividadHoy['id'] == '3' %}
+                {% set totalMinistro = totalMinistro + actividadHoy['total'] %}
+                {% if actividadHoy['estado'] == 'EN PROCESO' %}
+                    {% set aprobadoDireccion = actividadHoy['total'] %}
+                {% elseif actividadHoy['estado'] == 'DESESTIMADO' %}
+                    {% set desestimadoMinistro = actividadHoy['total'] %}
+                {% endif %}
+            {% elseif actividadHoy['id'] == '2' %}
+                {% if actividadHoy['estado'] == 'EN PROCESO' %}
+                    {% set aprobadoMinistro = actividadHoy['total'] %}
+                {% endif %}
+            {% endif %}
+        {% endfor %}
+        <tr>
+            <td class="caption-subject bold">MESA DE ENTRADA</td>
+            <td class="numeric text-center">{{ totalMesa - desestimadoMesa }}</td>
+            <td class="numeric text-center">{{ aprobadoMesa }}</td>
+            <td class="numeric text-center">{{ desestimadoMesa }}</td>
+        </tr>
+        <tr>
+            <td class="caption-subject bold">CONTROL PREVIO</td>
+            <td class="numeric text-center">{{ totalControlPrevio - desestimadoControlPrevio}}</td>
+            <td class="numeric text-center">{{ aprobadoControlPrevio }}</td>
+            <td class="numeric text-center">{{ desestimadoControlPrevio }}</td>
+        </tr>
+        <tr>
+            <td class="caption-subject bold">DIRECCIÓN</td>
+            <td class="numeric text-center">{{ totalDireccion - desestimadoDireccion }}</td>
+            <td class="numeric text-center">{{ aprobadoDireccion }}</td>
+            <td class="numeric text-center">{{ desestimadoDireccion }}</td>
+        </tr>
+        <tr>
+            <td class="caption-subject bold">MINISTRO</td>
+            <td class="numeric text-center">{{ totalMinistro - desestimadoMinistro }}</td>
+            <td class="numeric text-center">{{ aprobadoMinistro }}</td>
+            <td class="numeric text-center">{{ desestimadoMinistro }}</td>
+        </tr>
+        </tbody>
+    </table>
+</div>

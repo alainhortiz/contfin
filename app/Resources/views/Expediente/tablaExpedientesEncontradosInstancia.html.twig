@@ -1,0 +1,168 @@
+<div class="container-fluid" id="containerResultado">
+    <div class="portlet light estilosForm">
+        <div class="portlet-title">
+            <div class="caption font-green">
+                <i class="icon-folder-alt font-green"></i>
+                <span class="caption-subject bold uppercase">  LISTADO DE EXPEDIENTES POR INSTANCIA</span>
+            </div>
+            <div class="caption font-green" style="float: right">
+                <a href="{{ expedientes|length > 0 ? path('exportarListadoExpedientesPorInstancia' , {idInstancia: instancia.id}) : '#'}}" class="fa fa-file-excel-o fa-2x font-green" data-toggle="tooltip" data-placement="left" title="Exportar a Excel"></a>
+            </div>
+        </div>
+        <div class="col-lg-2 col-md-2 col-sm-2" style="margin-bottom: 40px">
+            <div class="form-group form-md-line-input">
+                <select class="form-control" id="instancia" name="instancia" >
+                    <option value="{{ instancia.id }}">{{ instancia.nombreinstancia }}</option>
+                    {% for instanciaSelect in  instancias %}
+                        {% if instanciaSelect.id != '1' and instanciaSelect.id != instancia.id %}
+                            <option value="{{ instanciaSelect.id }}">{{ instanciaSelect.nombreinstancia }}</option>
+                        {% endif %}
+                    {% endfor %}
+                </select>
+                <label for="instancia">INSTANCIA</label>
+            </div>
+        </div>
+        <div class="row"  style="margin-top: 20px">
+            <div class="col-md-12">
+                <div class="portlet box grey-cascade">
+                    <div class="portlet-title" style="background-color: #2b3643">
+                        <div class="caption">
+                            <i class="fa fa-table"></i>
+                            <span> Total importe solicitado: {{ (totalMontoExpedientesPorInstancia/1000)|number_format(0, ',', '.')~' '~tipoMoneda }}</span>
+                        </div>
+                        <div class="caption" style="float: right">
+                            <span>en miles de {{ tipoMoneda }}</span>
+                        </div>
+                    </div>
+                    <div class="portlet-body " style="background-color: #afbac0 ; overflow-x: auto">
+                        <table class="table table-striped table-bordered table-hover table-responsive myDataTable" id="dataExpediente">
+                            <thead>
+                            <tr>
+                                <th>
+                                    Prioritario
+                                </th>
+                                <th>
+                                    Fecha
+                                </th>
+                                <th>
+                                    No Expediente
+                                </th>
+                                <th>
+                                    Beneficiario
+                                </th>
+                                <th>
+                                    Administrador del Crédito
+                                </th>
+                                <th>
+                                    Monto
+                                </th>
+                                <th>
+                                    Estado
+                                </th>
+                                <th>
+                                    Acciones
+                                </th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for expediente in expedientes %}
+                                {% if expediente.seccion.confidencial == true %}
+                                    {% if is_granted("ROLE_SUPERVISOR") %}
+                                        <tr data-id ="{{ expediente.id }}">
+                                            <td>
+                                                <div class="hidden">{{ expediente.prioridad == 1  ? 0: 1 }}</div>
+                                                <div class="md-checkbox" style="margin-left: 40px ">
+                                                    <input type="checkbox" disabled {{ expediente.prioridad == 1  ? 'checked'  }}  class="md-check">
+                                                    <label>
+                                                        <span></span>
+                                                        <span class="check"></span>
+                                                        <span class="box"></span>
+                                                    </label>
+                                                </div>
+                                            </td>
+                                            <td>{{ expediente.fechaEntrada|date('Y-m-d') }}</td>
+                                            <td>{{ expediente.getNumeroExpedienteMostrar }}</td>
+                                            <td>{{ expediente.beneficiario }}</td>
+                                            <td>{{ expediente.getSeccion.nombreseccion }}</td>
+                                            <td style="text-align: right">{{ (expediente.importesolicitado/1000)|number_format(0, ',', '.')~' '~tipoMoneda }}</td>
+                                            <td>{{ expediente.getEstadoexpedienteinstancia().getEstadoexpediente().nombreestado }}</td>
+                                            <td>
+                                                <a href="{{ path('verExpediente' , {idExpediente: expediente.id , ruta: 'expedientesPorInstancia' } ) }}" data-toggle="tooltip" data-placement="right" title="Ver Expediente"><i class="glyphicon glyphicon-folder-open" ></i></a>
+                                            </td>
+                                        </tr>
+                                    {% endif %}
+                                {% else %}
+                                    <tr data-id ="{{ expediente.id }}">
+                                        <td>
+                                            <div class="hidden">{{ expediente.prioridad == 1  ? 0: 1 }}</div>
+                                            <div class="md-checkbox" style="margin-left: 40px">
+                                                <input type="checkbox" disabled {{ expediente.prioridad == 1  ? 'checked'  }}  class="md-check">
+                                                <label>
+                                                    <span></span>
+                                                    <span class="check"></span>
+                                                    <span class="box"></span>
+                                                </label>
+                                            </div>
+                                        </td>
+                                        <td>{{ expediente.fechaEntrada|date('Y-m-d') }}</td>
+                                        <td>{{ expediente.getNumeroExpedienteMostrar }}</td>
+                                        <td>{{ expediente.beneficiario }}</td>
+                                        <td>{{ expediente.getSeccion.nombreseccion }}</td>
+                                        <td style="text-align: right">{{ (expediente.importesolicitado/1000)|number_format(0, ',', '.')~' '~tipoMoneda }}</td>
+                                        <td>{{ expediente.getEstadoexpedienteinstancia().getEstadoexpediente().nombreestado }}</td>
+                                        <td>
+                                            <a href="{{ path('verExpediente' , {idExpediente: expediente.id , ruta: 'expedientesPorInstancia' } ) }}" data-toggle="tooltip" data-placement="right" title="Ver Expediente"><i class="glyphicon glyphicon-folder-open" ></i></a>
+                                        </td>
+                                    </tr>
+                                {% endif %}
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    jQuery(document).ready(function() {
+        $('[data-toggle="tooltip"]').tooltip();
+        {% if expedientes|length <= 0 %}
+            $('.fa-file-excel-o').on('click' , function () {
+                alertify.alert('<strong>No hay datos para exportar en esta vista.</strong>')
+                    .setHeader('<span class="glyphicon glyphicon-ban-circle" style="font-size: 20px"></span>' +
+                        '<h4 class="modal-title" style="display: inline-block; margin-left: 10px">Error</h4>')
+                    .set('label','Aceptar');
+                return false;
+        });
+        {% endif %}
+        $('#instancia').on('change' , function () {
+
+            $(".preload").removeClass('hidden');
+
+            var mat_datos = {
+                instancia: $("#instancia").val(),
+            };
+
+            $.ajax({
+                type: "POST",
+                dataType: "html",
+                url: '{{ path("expedientesPorInstancia") }}',
+                data: mat_datos
+            }).done(function (data) {
+
+                $(".preload").addClass('hidden');
+                $('#containerResultado').replaceWith(data).css("display","block");
+                oTable = $('#dataExpediente').dataTable( {
+                    "order": [[0, "asc"],[1, "asc"]],
+                    "aoColumnDefs": [
+                        { "sWidth": "8%", "aTargets": [ 0 ] },
+                        { "sWidth": "8%", "aTargets": [ 1 ] },
+                        { "sWidth": "30%", "aTargets": [ 3 ] },
+                    ],
+                } );
+            });
+
+        });
+    });
+</script>

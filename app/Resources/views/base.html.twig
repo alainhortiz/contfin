@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8"/>
+    <title>{% block title %}CONFIN{% endblock %}</title>
+    {% block stylesheets %}
+        <!-- BEGIN GLOBAL MANDATORY STYLES -->
+        <link href="{{ asset('easyadmin/plugins/font-awesome/css/font-awesome.css') }}" rel="stylesheet"/>
+        <link href="{{ asset('easyadmin/plugins/simple-line-icons/simple-line-icons.min.css') }}" rel="stylesheet">
+        <link href="{{ asset('easyadmin/plugins/bootstrap/css/bootstrap.min.css') }}" rel="stylesheet">
+        <link href="{{ asset('easyadmin/plugins/uniform/css/uniform.default.css') }}" rel="stylesheet">
+        <link href="{{ asset('easyadmin/plugins/bootstrap-switch/css/bootstrap-switch.css') }}" rel="stylesheet">
+        <link href="{{ asset('easyadmin/tema/layout/css/themes/darkblue.css') }}" rel="stylesheet">
+        <!-- END GLOBAL MANDATORY STYLES -->
+        <!-- BEGIN THEME STYLES -->
+        <link href="{{ asset('easyadmin/global/css/components.css') }}" rel="stylesheet">
+        <link href="{{ asset('easyadmin/global/css/plugins.css') }}" rel="stylesheet">
+        <link href="{{ asset('easyadmin/tema/layout/css/layout.css') }}" rel="stylesheet">
+
+
+        <!-- END THEME STYLES -->
+        <link href="{{ asset('easyadmin/plugins/Alertify/css/alertify.css') }}" rel="stylesheet"/>
+        <link href="{{ asset('easyadmin/plugins/Alertify/css/themes/default.css') }}" rel="stylesheet"/>
+        <link href="{{ asset('easyadmin/global/css/estilos.css') }}" rel="stylesheet">
+    {% endblock %}
+    <link rel="icon" type="image/phg" sizes="32x32"  href="{{ asset('images/favicon.png') }}"/>
+</head>
+<body class="page-header-fixed page-quick-sidebar-over-content page-full-width">
+{% block nav %}
+    <div class="page-header -i navbar navbar-fixed-top" style="color: #009490">
+        <!-- BEGIN HEADER INNER -->
+        <div class="page-header-inner">
+            <!-- BEGIN LOGO -->
+            <div class="page-logo" style="margin-left: 1%">
+                <a href="{{ path('inicio') }}">
+                    <img style="width: 180px" src="{{ asset('images/LogoContfinWide.png') }}" alt="ConTFin Logo"/>
+                </a>
+            </div>
+            <!-- END LOGO -->
+            <!-- BEGIN HORIZANTAL MENU -->
+            <!-- DOC: Apply "hor-menu-light" class after the "hor-menu" class below to have a horizontal menu with white background -->
+            <!-- DOC: This is desktop version of the horizontal menu. The mobile version is defined(duplicated) sidebar menu below. So the horizontal menu has 2 seperate versions -->
+            <div class="hor-menu hidden-sm hidden-xs" style="margin-left: 10%">
+                <ul class="nav navbar-nav">
+                    <!-- DOC: Remove data-hover="dropdown" and data-close-others="true" attributes below to disable the horizontal opening on mouse hover -->
+                    {% if  is_granted("ROLE_PROCESADOR") or is_granted("ROLE_PAGADOR") or is_granted("ROLE_SUPERVISOR") or is_granted("ROLE_MINISTRO")  or is_granted("ROLE_SUPERUSUARIO")  %}
+                        <li class="classic-menu-dropdown" >
+                            <a data-toggle="dropdown" href="javascript:;" data-hover="megamenu-dropdown"
+                               data-close-others="true">
+                                EXPEDIENTE <i  class="fa fa-angle-down"></i>
+                            </a>
+                            <ul class="dropdown-menu pull-left">
+
+                                {% if  app.user.instancia.preorden == '1' or app.user.instancia.preorden == '6'  %}
+                                    <li>
+                                        <a href="{{ path('addExpediente') }}">
+                                            <i class="fa fa-folder"></i> INTRODUCIR EXPEDIENTE </a>
+                                    </li>
+                                {% endif %}
+                                <li>
+                                    <a href="{{ path('mostrarBuscadorExpediente') }}">
+                                        <i class="fa fa-search"></i> BUSCAR EXPEDIENTE </a>
+                                </li>
+                                {% if is_granted("ROLE_MINISTRO")  %}
+                                    <li>
+                                        <a href="{{ path('listadoExpedientes') }}">
+                                            <i class="fa fa-folder-open"></i> LISTADO DE EXPEDIENTES</a>
+                                    </li>
+                                {% endif %}
+                                {% if (is_granted("ROLE_PROCESADOR") or is_granted("ROLE_SUPERVISOR")) and app.user.instancia.preorden != '6' %}
+                                    <li>
+                                        <a href="{{ path('expedientesPorProcesar') }}">
+                                            <i class="fa fa-folder-open"></i> EXPEDIENTES POR PROCESAR</a>
+                                    </li>
+                                    <li>
+                                        <a href="{{ path('expedientesEnProceso') }}">
+                                            <i class="fa fa-folder-open"></i> EXPEDIENTES EN PROCESO</a>
+                                    </li>
+                                {% endif %}
+                                {% if is_granted("ROLE_SUPERVISOR") and app.user.instancia.preorden != '6' %}
+                                    <li>
+                                        <a href="{{ path('expedientesPorSupervisar') }}">
+                                            <i class="fa fa-folder-open"></i> EXPEDIENTES POR SUPERVISAR</a>
+                                    </li>
+                                    {% if  app.user.instancia.preorden > 1  %}
+                                        <li>
+                                            <a href="{{ path('expedientesSinCredito') }}">
+                                                <i class="fa fa-folder-open"></i> EXPEDIENTES SIN CREDITO</a>
+                                        </li>
+                                    {% endif %}
+                                    <li>
+                                        <a href="{{ path('expedientesDesestimados') }}">
+                                            <i class="fa fa-folder-open"></i> EXPEDIENTES DESESTIMADOS</a>
+                                    </li>
+                                {% endif %}
+                                {% if  app.user.instancia.preorden > 2 and app.user.instancia.preorden < 6 and  is_granted("ROLE_SUPERVISOR") %}
+                                    <li>
+                                        <a href="{{ path('expedientesPorInstancia') }}">
+                                            <i class="fa fa-folder-open"></i> EXPEDIENTES POR INSTANCIA</a>
+                                    </li>
+                                {% endif %}
+                            </ul>
+                        </li>
+                    {% endif %}
+                    {% if (app.user.instancia.preorden == '4' or app.user.instancia.preorden == '3') and is_granted("ROLE_SUPERVISOR")  %}
+                        <li class="classic-menu-dropdown">
+                            <a data-toggle="dropdown" href="javascript:;" data-hover="megamenu-dropdown"
+                               data-close-others="true">
+                                MANDAMIENTOS DE PAGO <i class="fa fa-angle-down"></i>
+                            </a>
+                            <ul class="dropdown-menu pull-left">
+                                <li>
+                                    <a href="{{ path('mandamientosPagosEnProceso') }}">
+                                        <i class="fa fa-clipboard"></i> MANDAMIENTOS DE PAGO EN PROCESO</a>
+                                </li>
+                                <li>
+                                    <a href="{{ path('pagosDirectosEnProceso') }}">
+                                        <i class="fa fa-clipboard"></i> PAGOS ANTICIPADOS EN PROCESO</a>
+                                </li>
+                                {% if is_granted("ROLE_MINISTRO")  %}
+                                    <li>
+                                        <a href="{{ path('mandamientosPagosProcesados') }}">
+                                            <i class="fa fa-clipboard"></i> MANDAMIENTOS DE PAGO PROCESADOS</a>
+                                    </li>
+                                    <li>
+                                        <a href="{{ path('pagosDirectosProcesados') }}">
+                                            <i class="fa fa-clipboard"></i> PAGOS ANTICIPADOS PROCESADOS</a>
+                                    </li>
+                                {% endif %}
+                            </ul>
+                        </li>
+                    {% endif %}
+                    {% if  is_granted("ROLE_PROCESADOR") or is_granted("ROLE_PAGADOR") or is_granted("ROLE_SUPERVISOR") or is_granted("ROLE_MINISTRO")  %}
+                        <li class="classic-menu-dropdown">
+                            <a data-toggle="dropdown" href="javascript:;" data-hover="megamenu-dropdown"
+                               data-close-others="true">
+                                PRESUPUESTO <i class="fa fa-angle-down"></i>
+                            </a>
+                            <ul class="dropdown-menu pull-left">
+                                {% if is_granted("ROLE_MINISTRO")  %}
+                                    <li>
+                                        <a href="#" data-toggle="modal" data-target="#porcientoPresupuesto">
+                                            <i class="fa fa-sort-numeric-desc"></i> PORCIENTO A OCULTAR DEL PRESUPUESTO </a>
+                                    </li>
+                                    <li>
+                                        <a href="{{ path('ajustePresupuesto') }}" >
+                                            <i class="fa fa-exchange"></i> AJUSTAR PRESUPUESTOS DEL CAPITULO II </a>
+                                    </li>
+                                {% endif %}
+                                <li>
+                                    <a href="{{ path('presupuestoPorSecciones') }}">
+                                        <i class="fa fa-bars"></i> PRESUPUESTO POR SECCIONES</a>
+                                </li>
+                            </ul>
+                        </li>
+                    {% endif %}
+                    {% if is_granted("ROLE_ADMINISTRADOR") or is_granted("ROLE_SUPERVISOR") or  is_granted("ROLE_SUPERUSUARIO") %}
+                        <li class="classic-menu-dropdown">
+                            <a data-toggle="dropdown" href="javascript:;" data-hover="megamenu-dropdown"
+                               data-close-others="true">
+                                ADMINISTRACION <i class="fa fa-angle-down"></i>
+                            </a>
+                            <ul class="dropdown-menu pull-left">
+                                {% if is_granted("ROLE_ADMINISTRADOR") or is_granted("ROLE_SUPERUSUARIO") %}
+                                    <li>
+                                        <a href="{{ path('gestionarUsuarios') }}">
+                                            <i class="fa fa-users"></i> GESTIONAR USUARIOS </a>
+                                    </li>
+                                    <li>
+                                        <a href="{{ path('addUsuario') }}">
+                                            <i class="fa fa-user"></i> AGREGAR USUARIO</a>
+                                    </li>
+                                {% endif %}
+                                <li>
+                                    <a href="{{ path('trazas') }}">
+                                        <i class="fa fa-eye"></i> TRAZAS</a>
+                                </li>
+                            </ul>
+                        </li>
+                    {% endif %}
+                    <li class="classic-menu-dropdown">
+                        <a href="{{ path('descargarAyuda') }}" >
+                            AYUDA  <i class="icon icon-question"></i>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            <!-- END HORIZANTAL MENU -->
+            <!-- BEGIN RESPONSIVE MENU TOGGLER -->
+            <a href="javascript:;" class="menu-toggler responsive-toggler" data-toggle="collapse" data-target=".navbar-collapse">
+            </a>
+            <!-- END RESPONSIVE MENU TOGGLER -->
+            <!-- BEGIN TOP NAVIGATION MENU -->
+            <div class="top-menu">
+                <ul class="nav navbar-nav pull-right">
+                    <li class="dropdown dropdown-user">
+                        <a href="javascript:;" class="dropdown-toggle" data-toggle="dropdown" data-hover="dropdown"
+                           data-close-others="true">
+                            <span class="username username-hide-on-mobile">Bienvenido: {{ app.user.persona.nombres }}</span>
+                            <i class="fa fa-angle-down"></i>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-default">
+                            <li>
+                                <a href="{{ path('passwordForm') }}">
+                                    <i class="icon-key"></i>Cambiar Contraseña</a>
+                            </li>
+                        </ul>
+                    </li>
+                    <!-- END USER LOGIN DROPDOWN -->
+                    <!-- BEGIN QUICK SIDEBAR TOGGLER -->
+                    <!-- DOC: Apply "dropdown-dark" class after below "dropdown-extended" to change the dropdown styte -->
+                    <li class="dropdown dropdown-quick-sidebar-toggler">
+                        <a href="{{ path('logout') }}" class="dropdown-toggle">
+                            <i class="icon-logout"></i>
+                        </a>
+                    </li>
+                    <!-- END QUICK SIDEBAR TOGGLER -->
+                </ul>
+            </div>
+            <!-- END TOP NAVIGATION MENU -->
+        </div>
+        <!-- END HEADER INNER -->
+    </div>
+    <div class="clearfix">
+    </div>
+{% endblock %}
+
+<!-- BEGIN CONTENT -->
+<div class="page-container">
+    {% block responsiveNav%}
+        <!-- BEGIN SIDEBAR -->
+        <div class="page-sidebar-wrapper">
+            <!-- BEGIN HORIZONTAL RESPONSIVE MENU -->
+            <!-- DOC: Set data-auto-scroll="false" to disable the sidebar from auto scrolling/focusing -->
+            <!-- DOC: Change data-auto-speed="200" to adjust the sub menu slide up/down speed -->
+            <div class="page-sidebar navbar-collapse collapse">
+                <ul class="page-sidebar-menu" data-slide-speed="200" data-auto-scroll="true">
+                    {% if  is_granted("ROLE_PROCESADOR") or is_granted("ROLE_PAGADOR") or is_granted("ROLE_SUPERVISOR") or is_granted("ROLE_MINISTRO") or is_granted("ROLE_SUPERUSUARIO") %}
+                        <li>
+                            <a>
+                                EXPEDIENTE <i class="fa fa-angle-down"></i>
+                            </a>
+                            <ul class="sub-menu">
+                                {% if  app.user.instancia.preorden == '1' or app.user.instancia.preorden == '6'  %}
+                                    <li>
+                                        <a href="{{ path('addExpediente') }}">
+                                            <i class="fa fa-folder"></i> INTRODUCIR EXPEDIENTE </a>
+                                    </li>
+                                {% endif %}
+                                <li>
+                                    <a href="{{ path('mostrarBuscadorExpediente') }}">
+                                        <i class="fa fa-search"></i> BUSCAR EXPEDIENTE </a>
+                                </li>
+                                {% if is_granted("ROLE_MINISTRO") %}
+                                    <li>
+                                        <a href="{{ path('listadoExpedientes') }}">
+                                            <i class="fa fa-folder-open"></i> LISTADO DE  EXPEDIENTES</a>
+                                    </li>
+                                {% endif %}
+                                {% if (is_granted("ROLE_PROCESADOR") or is_granted("ROLE_SUPERVISOR")) and app.user.instancia.preorden != '6' %}
+                                    <li>
+                                        <a href="{{ path('expedientesPorProcesar') }}">
+                                            <i class="fa fa-folder-open"></i> EXPEDIENTES POR PROCESAR</a>
+                                    </li>
+                                    <li>
+                                        <a href="{{ path('expedientesEnProceso') }}">
+                                            <i class="fa fa-folder-open"></i> EXPEDIENTES EN PROCESO</a>
+                                    </li>
+                                {% endif %}
+                                {% if is_granted("ROLE_SUPERVISOR") and app.user.instancia.preorden != '6' %}
+                                    <li>
+                                        <a href="{{ path('expedientesPorSupervisar') }}">
+                                            <i class="fa fa-folder-open"></i> EXPEDIENTES POR SUPERVISAR</a>
+                                    </li>
+                                    {% if  app.user.instancia.preorden > 1  %}
+                                        <li>
+                                            <a href="{{ path('expedientesSinCredito') }}">
+                                                <i class="fa fa-folder-open"></i>EXPEDIENTES SIN CREDITO</a>
+                                        </li>
+                                    {% endif %}
+                                    <li>
+                                        <a href="{{ path('expedientesDesestimados') }}">
+                                            <i class="fa fa-folder-open"></i> EXPEDIENTES DESESTIMADOS</a>
+                                    </li>
+                                {% endif %}
+                                {% if  app.user.instancia.preorden > 2 and app.user.instancia.preorden < 6 and  is_granted("ROLE_SUPERVISOR") %}
+                                    <li>
+                                        <a href="{{ path('expedientesPorInstancia') }}">
+                                            <i class="fa fa-folder-open"></i> EXPEDIENTES POR INSTANCIA</a>
+                                    </li>
+                                {% endif %}
+                            </ul>
+                        </li>
+                    {% endif %}
+                    {% if (app.user.instancia.preorden == '4' or app.user.instancia.preorden == '3') and is_granted("ROLE_SUPERVISOR")  %}
+                        <li>
+                            <a>
+                                MANDAMIENTOS DE PAGO <i class="fa fa-angle-down"></i>
+                            </a>
+                            <ul class="sub-menu">
+                                <li>
+                                    <a href="{{ path('mandamientosPagosEnProceso') }}">
+                                        <i class="fa fa-bars"></i>MANDAMIENTOS DE PAGO EN PROCESO</a>
+                                </li>
+                                <li>
+                                    <a href="{{ path('pagosDirectosEnProceso') }}">
+                                        <i class="fa fa-bars"></i>PAGOS ANTICIPADOS EN PROCESO</a>
+                                </li>
+                                {% if app.user.instancia.preorden == '4' and is_granted("ROLE_SUPERVISOR") %}
+                                    <li>
+                                        <a href="{{ path('mandamientosPagosProcesados') }}">
+                                            <i class="fa fa-clipboard"></i> MANDAMIENTOS DE PAGO PROCESADOS</a>
+                                    </li>
+                                    <li>
+                                        <a href="{{ path('pagosDirectosProcesados') }}">
+                                            <i class="fa fa-clipboard"></i> PAGOS ANTICIPADOS PROCESADOS</a>
+                                    </li>
+                                {% endif %}
+                            </ul>
+                        </li>
+                    {% endif %}
+                    {% if  is_granted("ROLE_PROCESADOR") or is_granted("ROLE_PAGADOR") or is_granted("ROLE_SUPERVISOR") or is_granted("ROLE_MINISTRO") %}
+                        <li>
+                            <a>
+                                PRESUPUESTO <i class="fa fa-angle-down"></i>
+                            </a>
+                            <ul class="sub-menu">
+                                {% if  is_granted("ROLE_MINISTRO") %}
+                                    <li>
+                                        <a href="#" data-toggle="modal" data-target="#porcientoPresupuesto">
+                                            <i class="fa fa-sort-numeric-desc"></i> PORCIENTO A OCULTAR DEL PRESUPUESTO </a>
+                                    </li>
+                                    <li>
+                                        <a href="{{ path('ajustePresupuesto') }}" >
+                                            <i class="fa fa-exchange"></i> AJUSTAR PRESUPUESTOS DEL CAPITULO II </a>
+                                    </li>
+                                {% endif %}
+                                <li>
+                                    <a href="{{ path('presupuestoPorSecciones') }}">
+                                        <i class="fa fa-bars"></i> PRESUPUESTO POR SECCIONES</a>
+                                </li>
+                            </ul>
+                        </li>
+                    {% endif %}
+                    {% if is_granted("ROLE_ADMINISTRADOR") or is_granted("ROLE_SUPERVISOR") or is_granted("ROLE_SUPERUSUARIO") %}
+                        <li>
+                            <a>
+                                ADMINISTRACION <i class="fa fa-angle-down"></i>
+                            </a>
+                            <ul class="sub-menu">
+                                {% if is_granted("ROLE_ADMINISTRADOR") or is_granted("ROLE_SUPERUSUARIO") %}
+                                    <li>
+                                        <a href="{{ path('gestionarUsuarios') }}">
+                                            <i class="fa fa-users"></i> GESTIONAR USUARIOS </a>
+                                    </li>
+                                    <li>
+                                        <a href="{{ path('addUsuario') }}">
+                                            <i class="fa fa-user"></i> INGRESAR USUARIO</a>
+                                    </li>
+                                {% endif %}
+                                <li>
+                                    <a href="{{ path('trazas') }}">
+                                        <i class="fa fa-eye"></i> TRAZAS</a>
+                                </li>
+                            </ul>
+                        </li>
+                    {% endif %}
+                    <li>
+                        <a href="{{ path('descargarAyuda') }}">
+                            AYUDA  <i class="icon icon-question"></i>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            <!-- END HORIZONTAL RESPONSIVE MENU -->
+        </div>
+        <!-- END SIDEBAR -->
+    {% endblock %}
+    <div class="page-content-wrapper">
+        <div class="page-content" >
+            {% block info %}
+                <div class="row counters">
+                    <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
+                        {#<div class="dashboard-stat green-haze">
+                            <div class="visual">
+                                <i class="fa fa-money"></i>
+                            </div>
+                            <div class="details">
+                                <div class="number" id="nameDisponibilidad">
+                                    {% set totalDisponibilidad = totalInicial|abs - totalDisponible|abs %}
+                                    {{ totalDisponibilidad|abs|number_format(0, ',', '.') }} {{ tipoMoneda }}
+                                </div>
+                                <div class="desc">
+                                    <strong>DISPONIBILIDAD </strong>
+                                </div>
+                            </div>
+                        </div>#}
+                    </div>
+                    <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
+                        {#<div class="dashboard-stat green-haze">
+                            <div class="visual">
+                                <i class="fa fa-bar-chart-o"></i>
+                            </div>
+                            <div class="details" >
+                                <div class="number" id="nameLiquidez">
+                                    {% set totalLiquidez = totalInicial|abs - totalEjecutado|abs %}
+                                    {{ totalLiquidez|abs|number_format(0, ',', '.') }} {{ tipoMoneda }}
+                                </div>
+                                <div class="desc">
+                                    <strong>LIQUIDEZ</strong>
+                                </div>
+                            </div>
+                        </div>#}
+                    </div>
+                    <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
+                        <div class="dashboard-stat green-haze">
+                            <div class="visual">
+                                <i class="fa fa-shopping-cart"></i>
+                            </div>
+                            <div class="details">
+                                <div class="number" data-toggle="counter-up">
+                                    {{ cantidadPartidasFondos }}
+                                </div>
+                                <div class="desc">
+                                    <strong>PARTIDAS EN USO</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
+                        <div class="dashboard-stat green-haze">
+                            <div class="visual">
+                                <i class="fa fa-globe"></i>
+                            </div>
+                            <div class="details">
+                                <div class="number" data-toggle="counter-up">
+                                    {{ cantidadPartidasSinUso }}
+                                </div>
+                                <div class="desc">
+                                    <strong>PARTIDAS SIN USO</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endblock %}
+            {% block body %}{% endblock %}
+        </div>
+    </div>
+</div>
+<!-- END CONTENT -->
+
+{% block footer %}
+    <!-- BEGIN FOOTER -->
+    <div class="page-footer">
+        <div class="page-footer-inner col-lg-offset-5">
+
+            <strong>SISTEMA INTEGRAL DE GESTIÓN FINANCIERA DE LAS CUENTAS CORRIENTES</strong>
+            <br>Copyright 2019 &copy; Todos los derechos reservados
+        </div>
+        <div class="scroll-to-top">
+            <i class="icon-arrow-up"></i>
+        </div>
+    </div>
+    <!-- END FOOTER -->
+{% endblock %}
+{% block javascripts %}
+    {{ include('Presupuesto/modalPorcientoPresupuesto.html.twig') }}
+    <!-- BEGIN JAVASCRIPTS(Load javascripts at bottom, this will reduce page load time) -->
+    <!-- BEGIN CORE PLUGINS -->
+    <script src="{{ asset('easyadmin/global/js/jquery.min.js') }}"></script>
+    <script src="{{ asset('easyadmin/global/js/jquery-migrate.min.js') }}"></script>
+    <!-- IMPORTANT! Load jquery-ui.min.js before bootstrap.min.js to fix bootstrap tooltip conflict with jquery ui tooltip -->
+    <script src="{{ asset('easyadmin/plugins/jquery-ui/jquery-ui.min.js') }}"></script>
+    <script src="{{ asset('easyadmin/plugins/bootstrap/js/bootstrap.min.js') }}"></script>
+    <script src="{{ asset('easyadmin/plugins/bootstrap-hover-dropdown/bootstrap-hover-dropdown.min.js') }}"></script>
+    <script src="{{ asset('easyadmin/plugins/jquery-slimscroll/jquery.slimscroll.min.js') }}"></script>
+    <script src="{{ asset('easyadmin/global/js/jquery.blockui.min.js') }}"></script>
+    <script src="{{ asset('easyadmin/global/js/jquery.cokie.min.js') }}"></script>
+    <script src="{{ asset('easyadmin/plugins/uniform/jquery.uniform.min.js') }}"></script>
+    <script src="{{ asset('easyadmin/plugins/bootstrap-switch/js/bootstrap-switch.min.js') }}"></script>
+    <!-- END CORE PLUGINS -->
+    <!-- BEGIN PAGE LEVEL SCRIPTS -->
+    <script src="{{ asset('easyadmin/global/js/metronic.js') }}"></script>
+    <script src="{{ asset('easyadmin/tema/layout/scripts/layout.js') }}"></script>
+    <script src="{{ asset('easyadmin/tema/layout/scripts/quick-sidebar.js') }}"></script>
+    <script src="{{ asset('easyadmin/tema/layout/scripts/demo.js') }}"></script>
+    <script src="{{ asset('easyadmin/inicio/index.js') }}"></script>
+    <!-- END PAGE LEVEL SCRIPTS -->
+    <script src="{{ asset('easyadmin/plugins/Alertify/alertify.js') }}"></script>
+    <script src="{{ asset('easyadmin/global/js/moment.js') }}"></script>
+    <script src="{{ asset('easyadmin/global/js/functionsAll.js') }}"></script>
+    <script>
+        alertify.confirm()
+            .setting({
+                'defaultFocus': 'cancel',
+                'labels': {ok: 'Aceptar', cancel: 'Cancelar'},
+                'modal': true
+            }).setHeader('<span class="glyphicon glyphicon-alert" style="font-size: 20px"></span>' +
+            '<h4 class="modal-title" style="display: inline-block; margin-left: 10px">Confirmación</h4>');
+        $('[data-toggle="tooltip"]').tooltip();
+        $(document).ready(function () {
+            Metronic.init(); // init metronic core componets
+            Layout.init(); // init layout
+            QuickSidebar.init(); // init quick sidebar
+            Demo.init(); // init demo features
+            Index.init();
+            //funcion para aplicar el porciento al presupuesto
+            $('#maceptarPorciento').on('click',function () {
+
+                $('#porcientoPresupuesto').modal('hide');
+                $(".preload").removeClass('hidden');
+
+
+                var mat_datos = {
+
+                    porciento: $('#porciento').val(),
+                };
+
+                $.ajax({
+                    type: "POST",
+                    dataType: "html",
+                    url: '{{ path("aplicarPorcientoReserva") }}',
+                    data: mat_datos
+                }).done(function (data) {
+
+                    $(".preload").addClass('hidden');
+                    if(data == 'ok'){
+
+                        alertify.alert('<strong>El porciento de reserva ha sido cambiado correctamente.</strong>')
+                            .setHeader('<span class="glyphicon glyphicon-ok-circle" style="font-size: 20px"></span>' +
+                                '<h4 class="modal-title" style="display: inline-block; margin-left: 10px">Confirmacion</h4>')
+                            .set('label','Aceptar')
+                    }else{
+                        alertify.alert('<strong>'+ data +'</strong>')
+                            .setHeader('<span class="glyphicon glyphicon-ban-circle" style="font-size: 20px"></span>' +
+                                '<h4 class="modal-title" style="display: inline-block; margin-left: 10px">Error</h4>')
+                            .set('label','Aceptar')
+                    }
+                });
+            });
+        });
+    </script>
+{% endblock %}
+</body>
+</html>

@@ -1,0 +1,179 @@
+<?php
+
+namespace AppBundle\Entity;
+
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\ORM\Mapping as ORM;
+
+/**
+ * Presupuestosserviciosexpedientes
+ *
+ * @ORM\Table(name="presupuestosserviciosexpedientes", indexes={@ORM\Index(name="Ref983", columns={"presupuestoservicio_id"}), @ORM\Index(name="Ref1584", columns={"expediente_id"})})
+ * @ORM\Entity(repositoryClass="AppBundle\Repository\PresupuestosserviciosexpedientesRepository")
+ */
+class Presupuestosserviciosexpedientes
+{
+    /**
+     * @var integer
+     *
+     * @ORM\Column(name="id", type="integer", nullable=false)
+     * @ORM\Id
+     * @ORM\GeneratedValue(strategy="SEQUENCE")
+     * @ORM\SequenceGenerator(sequenceName="presupuestosserviciosexpedientes_id_seq", allocationSize=1, initialValue=1)
+     */
+    private $id;
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(name="descripcion", type="string", length=255, nullable=true)
+     */
+    private $descripcion;
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(name="importesolicitado", type="decimal", precision=18, scale=3, nullable=false)
+     */
+    private $importesolicitado = '0';
+
+    /**
+     * @var \Presupuestosservicios
+     *
+     * @ORM\ManyToOne(targetEntity="Presupuestosservicios")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="presupuestoservicio_id", referencedColumnName="id")
+     * })
+     */
+    private $presupuestoservicio;
+
+    /**
+     * @var \Expedientes
+     *
+     * @ORM\ManyToOne(targetEntity="Expedientes" , inversedBy="partidas")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="expediente_id", referencedColumnName="id")
+     * })
+     */
+    private $expediente;
+
+    /**
+     * @ORM\OneToMany(targetEntity="Presupuestosserviciosexpedientesproyectos", mappedBy="presupuestoservicioexpediente" , cascade={"remove"})
+     */
+    private $proyectos;
+
+    /**
+     * Presupuestosserviciosexpedientes constructor.
+     */
+    public function __construct()
+    {
+        $this->proyectos = new ArrayCollection();
+    }
+
+
+    /**
+     * Get id
+     *
+     * @return integer
+     */
+    public function getId()
+    {
+        return $this->id;
+    }
+
+    /**
+     * Set descripcion
+     *
+     * @param string $descripcion
+     *
+     * @return Presupuestosserviciosexpedientes
+     */
+    public function setDescripcion($descripcion)
+    {
+        $this->descripcion = $descripcion;
+
+        return $this;
+    }
+
+    /**
+     * Get descripcion
+     *
+     * @return string
+     */
+    public function getDescripcion()
+    {
+        return $this->descripcion;
+    }
+
+    /**
+     * Set importesolicitado
+     *
+     * @param string $importesolicitado
+     *
+     * @return Presupuestosserviciosexpedientes
+     */
+    public function setImportesolicitado($importesolicitado)
+    {
+        $this->importesolicitado = $importesolicitado;
+
+        return $this;
+    }
+
+    /**
+     * Get importesolicitado
+     *
+     * @return string
+     */
+    public function getImportesolicitado()
+    {
+        return $this->importesolicitado;
+    }
+
+    /**
+     * Set presupuestoservicio
+     *
+     * @param \AppBundle\Entity\Presupuestosservicios $presupuestoservicio
+     *
+     * @return Presupuestosserviciosexpedientes
+     */
+    public function setPresupuestoservicio(\AppBundle\Entity\Presupuestosservicios $presupuestoservicio = null)
+    {
+        $this->presupuestoservicio = $presupuestoservicio;
+
+        return $this;
+    }
+
+    /**
+     * Get presupuestoservicio
+     *
+     * @return \AppBundle\Entity\Presupuestosservicios
+     */
+    public function getPresupuestoservicio()
+    {
+        return $this->presupuestoservicio;
+    }
+
+    /**
+     * Set expediente
+     *
+     * @param \AppBundle\Entity\Expedientes $expediente
+     *
+     * @return Presupuestosserviciosexpedientes
+     */
+    public function setExpediente(\AppBundle\Entity\Expedientes $expediente = null)
+    {
+        $this->expediente = $expediente;
+
+        return $this;
+    }
+
+    /**
+     * Get expediente
+     *
+     * @return \AppBundle\Entity\Expedientes
+     */
+    public function getExpediente()
+    {
+        return $this->expediente;
+    }
+}

@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/html">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        /** Define the margins of your page **/
+        @page {
+            margin : 100px 25px;
+        }
+
+        header {
+            position: fixed;
+            top: -60px;
+            left: 0px;
+            right: 0px;
+            height: 50px;
+        }
+
+        main {
+            margin-top: 200px;
+            margin-left: 50px;
+            margin-right: 50px;
+        }
+
+        footer {
+            position: fixed;
+            bottom: -90px;
+            left: 0px;
+            right: 0px;
+            height: 50px;
+        }
+    </style>
+</head>
+<body>
+<header>
+    <div class="page-logo" style="margin-left: 1%">
+        <img style="margin-left: 80px;width: 80px" src="./images/membrete.bmp"/><br/>
+    </div>
+    <p style="margin-top: -1px;font-size: 10pt;margin-left: 40px"><i><b>República de Guinea Ecuatorial</b></i></p>
+    <p style="margin-top: -15px;font-size: 10pt"><i><b>MINISTERIO DE HACIENDA, ECONOMÍA<br/></b></i></p>
+    <p style="margin-top: -15px;margin-left: 70px;font-size: 10pt"><i><b>Y PLANIFICACIÓN</b></i></p>
+    <img style="margin-top: -15px;margin-left: 70px;width: 120px" src="./images/linea.jpg"/><br/>
+    <p style="margin-left: 30px;margin-top: -22px;font-size: 10pt"><i><b>DIRECCIÓN GENERAL DE CONTROL</b></i></p>
+    <p style="margin-left: 85px;margin-top: -22px;font-size: 10pt"><i><b>FINANCIERO</b></i></p>
+    <p style="margin-top: -15px"><i>No _________________ </i></p>
+    <p style="margin-top: -15px"><i>Ref. ________________</i></p>
+    <p style="margin-top: -15px"><i>Sec. ________________ </i></p>
+    <br/>
+</header>
+<footer>
+    <p><i>Ilmo. Señor Secretario de {{ entidadRegistro }}.-
+        </i></p>
+</footer>
+<main>
+<p style="margin-left: 320px"><i><b>Excmo. Señor:</b></i></p>
+<p><i><b>Referencia:</b>
+        <section style="margin-left: 12%;margin-top: -20px;text-align: justify">Oficio de {{ entidadRegistro }}, número {{ numeroRegistro }}, de fecha {{ fechaLargaRegistro }}.-
+        </section>
+    </i></p>
+
+    <p><i><b>Asunto:</b>
+            <section style="margin-left: 13%;margin-top: -20px;text-align: justify">Solicitud de
+                libramiento de
+                <b>({{ expediente.importesolicitado|number_format(0, ',', '.') }},-) F
+                    CFA</b> a
+                favor de <b>{{ expediente.beneficiario }}</b> en concepto de {{ expediente.descripcion }}.
+            </section>
+        </i></p>
+
+    <p><i><b>Dictamen:</b>
+            <section style="margin-left: 13%;margin-top: -20px;text-align: justify">Una vez analizado el expediente y
+                recabado el dictamen
+                técnico de la Dirección General de Control
+                Financiero, para este Ministerio,{{ dictamen != '' ? " " ~ dictamen ~ " de " : " no procede autorizar el libramiento " }}
+                por el importe de <b>({{ monto|number_format(0, ',', '.') }},-) F
+                    CFA, </b>con cargo al vigente Presupuesto General de Gastos del Estado,
+            </section>
+        <section style="margin-left: 13%">
+            {% for part in expediente.partidas %}
+    <p><i><b>{{ part.presupuestoservicio.getNumeroeconomico().nombrenumeroeconomico }}</b></i></p>
+    <p style="margin-top: -15px;text-align: left"><i>Secc. {{ part.presupuestoservicio.servicio.seccion.codigoseccion }}
+            ;
+            Serv. {{ part.presupuestoservicio.servicio.codigoservicio }};
+            Cap. {{ part.presupuestoservicio.getNumeroeconomico().capitulo.codigocapitulo }};
+            Art. {{ part.presupuestoservicio.getNumeroeconomico().articulo }};
+            N.E {{ part.presupuestoservicio.getNumeroeconomico().codigonumeroeconomico }}</i>
+    <p style="text-align: right;margin-top: -45px"><i>{{ part.importesolicitado|number_format(0, ',', '.') }}.- F.
+            CFA.</i></p>
+    <i>{% if  part.presupuestoservicio.getNumeroeconomico().codigonumeroeconomico == '2660' %}
+            {% for proyecto in  part.proyectos %}
+                <p style="text-align: left;margin-right: 150px;">{{ "Cód., "~ proyecto.presupuestoproyecto.codigoproyecto ~", "~ proyecto.presupuestoproyecto.nombreproyecto }} </p>
+                <p style="text-align: right;margin-top: -45px">{{ proyecto.importesolicitado|number_format(0, ',', '.') ~ ".- F. CFA." }}</p>
+            {% endfor %}
+        {% endif %}
+        {% endfor %}
+        <br/>
+        <p style="text-align: left"><b>Total</b></p>
+        <p style="text-align: right;margin-top: -40px"><b>{{ monto|number_format(0, ',', '.') }}
+                .- F. CFA.</b></p>
+    </i></p></section>
+<br/><br/>
+<p style="margin-left: 250px"><i>Malabo, {{ fecha }}</i></p>
+<p style="margin-left: 250px;margin-top: -15px"><i><b>POR UNA GUINEA MEJOR,</b></i></p>
+<p style="margin-left: 300px;margin-top: -15px"><i>EL DIRECTOR</i></p>
+</main>
+</body>
+</html>
+

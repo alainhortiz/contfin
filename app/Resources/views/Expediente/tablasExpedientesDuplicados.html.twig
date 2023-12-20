@@ -1,0 +1,181 @@
+<div class="row" id="tablasExpedientesDuplicados">
+    <div class="col-lg-4 col-md-4 col-sm-4">
+        <div class="portlet"  style="margin-top: 20px">
+            <table id="dataExpedientesDuplicados" class="table table-hover table-bordered table-dark" style="width: 100% ; margin-top: 15px" >
+                <thead>
+                <tr>
+                    <th>EXPEDIENTES</th>
+                    <th class="text-center">DUPLICADO</th>
+                </tr>
+                </thead>
+                <tbody id="tbody">
+                {% for expediente in expedientesDuplicados %}
+                    <tr data-id ="{{ expediente.id }}">
+                        <td class="tocar" {{ loop.first ? 'style="color: #009490"' : '' }} ><i style="margin-right: 10px" class="fa fa-eye"></i>{{ expediente.getNumeroExpedienteMostrar }}</td>
+                        <td>
+                            <div class="md-checkbox" style="left: 45%">
+                                {% if expediente.activo == 1 or (expediente.estadoexpedienteinstancia.estadoexpediente.nombreestado == 'PAGO APROBADO' and expediente.estadoexpedienteinstancia.instancia.preorden == '4' )  %}
+                                    <input type="checkbox" id="duplicado{{ expediente.id }}" disabled class="md-check">
+                                {% else %}
+                                    <input type="checkbox" id="duplicado{{ expediente.id }}" class="md-check posible">
+                                {% endif %}
+                                <label for="duplicado{{ expediente.id }}">
+                                    <span></span>
+                                    <span class="check"></span>
+                                    <span class="box"></span>
+                                </label>
+                            </div>
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="col-lg-8 col-md-8 col-sm-8">
+        {% for expediente in expedientesDuplicados %}
+            <div id="portlet{{ expediente.id }}" class="portlet {{ loop.first ? 'activo' : 'hidden' }}"  style="margin-top: 20px">
+                <section class="section-gray">
+                    <div class="row" style="margin-left: 5px ; margin-bottom: 15px ; margin-top: 10px">
+                        <div class="col-lg-4 col-md-4 col-sm-4">
+                            <p style="color: #009490">{{ expediente.getNumeroExpedienteMostrar }}</p>
+                        </div>
+                    </div>
+                    <div class="row" style="margin-left: 5px ; margin-bottom: 15px">
+                        <div class="col-lg-6 col-md-6 col-sm-6">
+                            <strong>FECHA DE ENTRADA:</strong>
+                            <p>{{ expediente.fechaentrada|date('d-m-Y') }}</p>
+                        </div>
+                        <div class="col-lg-6 col-md-6 col-sm-6">
+                            <strong>ESTADO:</strong>
+                            <p>{{ expediente.estadoexpedienteinstancia.estadoexpediente.nombreestado }}</p>
+                        </div>
+                    </div>
+                    <div class="row" style="margin-left: 5px ; margin-bottom: 15px">
+                        <div class="col-lg-6 col-md-6 col-sm-6">
+                            <strong>ADMINISTRADOR DEL CRÉDITO:</strong>
+                            <p>{{ expediente.seccion.nombreseccion }}</p>
+                        </div>
+                        <div class="col-lg-6 col-md-6 col-sm-6">
+                            <strong>MONTO SOLICITADO: </strong>
+                            <p>{{ expediente.importesolicitado|number_format(0, ',', '.') }}</p>
+                        </div>
+                    </div>
+                    <div class="row" style="margin-left: 5px ; margin-bottom: 15px">
+                        <div class="col-lg-6 col-md-6 col-sm-6">
+                            <strong>BENEFICIARIO:</strong>
+                            <p>{{ expediente.beneficiario }}</p>
+                        </div>
+                        <div class="col-lg-6 col-md-6 col-sm-6">
+                            <strong>RESUMEN:</strong>
+                            <p>{{ expediente.resumen }}</p>
+                        </div>
+                    </div>
+                    <div class="row" style="margin-left: 5px ; margin-bottom: 15px">
+                        <div class="col-lg-12 col-md-12 col-sm-12">
+                            <div class="portlet">
+                                <label for="table"><strong>PARTIDAS PRESUPUESTARIAS</strong></label>
+                                <table id="numeracionEconomicaTabla" class="table table-hover table-bordered table-dark table-responsive" style="width: 98% ; background-color: white" >
+                                    <thead>
+                                    <tr>
+                                        <th>SECCIÓN</th>
+                                        <th>SERVICIO</th>
+                                        <th>CAPÍTULO</th>
+                                        <th>ARTÍCULO</th>
+                                        <th>NUM. E</th>
+                                        <th>MONTO</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody id="tbody">
+                                    {% for partida in expediente.partidas %}
+                                        <tr data-id ="{{ partida.id }}">
+                                            <td>{{ partida.presupuestoservicio.servicio.seccion.codigoseccion }}</td>
+                                            <td>{{ partida.presupuestoservicio.servicio.codigoservicio }}</td>
+                                            <td>{{ partida.presupuestoservicio.getNumeroeconomico().capitulo.codigocapitulo  }}</td>
+                                            <td>{{ partida.presupuestoservicio.getNumeroeconomico().articulo  }}</td>
+                                            <td>{{ partida.presupuestoservicio.getNumeroeconomico().codigonumeroeconomico  }}</td>
+                                            <td>{{ partida.importesolicitado|number_format(0, ',', '.')  }}</td>
+                                        </tr>
+                                    {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row" style="margin-left: 5px ; margin-bottom: 15px">
+                        <div class="col-lg-12 col-md-12 col-sm-12">
+                            <div class="portlet">
+                                <label for="table"><strong>REGISTROS</strong></label>
+                                <table id="registroTabla" class="table table-hover table-bordered table-dark table-responsive" style="width: 98% ; background-color: white" >
+                                    <thead>
+                                    <tr>
+                                        <th>FECHA REGISTRO</th>
+                                        <th>ENTIDAD</th>
+                                        <th>DEPARTAMENTO</th>
+                                        <th>REGISTRO</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody id="tbody">
+                                    {% for registro in expediente.registros %}
+                                        <tr data-id ="{{ registro.id }}">
+                                            <td>{{ registro.fecharegistro|date('d-m-Y') }}</td>
+                                            <td>{{ registro.ministerio.prefijoministerio ~' '~ registro.ministerio.seccion.nombreseccion }}</td>
+                                            <td>{{ registro.departamento }}</td>
+                                            <td>{{ registro.numeroregistro }}</td>
+                                        </tr>
+                                    {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row" style="margin-left: 5px ; margin-bottom: 15px">
+                        <div class="col-lg-12 col-md-12 col-sm-12">
+                            <strong>DESCRIPCIÓN:</strong>
+                            <p>{{ expediente.descripcion }}</p>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+
+<script>
+    jQuery(document).ready(function() {
+
+        // funcion para cambiar el cuadro de datos cuando se toca un expediente
+        $('#dataExpedientesDuplicados tbody').on('click', '.tocar', function () {
+
+            var row = $(this).parents('tr');
+            var idRow = row.data('id');
+
+            $('.activo').addClass('hidden').removeClass('activo');
+            $('#portlet'+idRow).addClass('activo').removeClass('hidden');
+
+            $('#dataExpedientesDuplicados td').each(function(){
+                $(this).css('color' , '#333333');
+            });
+            $(this).css('color' , '#009490');
+
+        });
+
+        //funcion que inactiva el resto de los checkbox cuando se selecciona uno
+        $('#dataExpedientesDuplicados tbody').on('click', '.md-check', function () {
+
+            if ($(this).prop('checked')) {
+
+                $('input[type=checkbox]').each(function () {
+                    $(this).prop('disabled' , true);
+                });
+                $(this).prop('disabled' , false);
+            }else{
+                $('.posibles').each(function () {
+                    $(this).prop('disabled' , false);
+                });
+            }
+        });
+
+
+    });
+</script>

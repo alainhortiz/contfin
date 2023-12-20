@@ -1,0 +1,169 @@
+<?php
+
+namespace AppBundle\Entity;
+
+use Doctrine\ORM\Mapping as ORM;
+
+/**
+ * Parametrosinstanciasexpedientes
+ *
+ * @ORM\Table(name="parametrosinstanciasexpedientes", indexes={@ORM\Index(name="Ref1539", columns={"expediente_id"}), @ORM\Index(name="Ref2651", columns={"usuario_id"}), @ORM\Index(name="Ref2938", columns={"parametroinstancia_id"})})
+ * @ORM\Entity(repositoryClass="AppBundle\Repository\ParametrosinstanciasexpedientesRepository")
+ */
+class Parametrosinstanciasexpedientes
+{
+    /**
+     * @var integer
+     *
+     * @ORM\Column(name="id", type="integer", nullable=false)
+     * @ORM\Id
+     * @ORM\GeneratedValue(strategy="SEQUENCE")
+     * @ORM\SequenceGenerator(sequenceName="parametrosinstanciasexpedientes_id_seq", allocationSize=1, initialValue=1)
+     */
+    private $id;
+
+    /**
+     * @var boolean
+     *
+     * @ORM\Column(name="evaluacion", type="boolean", nullable=false)
+     */
+    private $evaluacion = true;
+
+    /**
+     * @var \Usuario
+     *
+     * @ORM\ManyToOne(targetEntity="Usuario")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="usuario_id", referencedColumnName="id")
+     * })
+     */
+    private $usuario;
+
+    /**
+     * @var \Parametrosinstancias
+     *
+     * @ORM\ManyToOne(targetEntity="Parametrosinstancias")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="parametroinstancia_id", referencedColumnName="id")
+     * })
+     */
+    private $parametroinstancia;
+
+    /**
+     * @var \Expedientes
+     *
+     * @ORM\ManyToOne(targetEntity="Expedientes")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="expediente_id", referencedColumnName="id")
+     * })
+     */
+    private $expediente;
+
+
+
+    /**
+     * Get id
+     *
+     * @return integer
+     */
+    public function getId()
+    {
+        return $this->id;
+    }
+
+    /**
+     * Set evaluacion
+     *
+     * @param boolean $evaluacion
+     *
+     * @return Parametrosinstanciasexpedientes
+     */
+    public function setEvaluacion($evaluacion)
+    {
+        $this->evaluacion = $evaluacion;
+
+        return $this;
+    }
+
+    /**
+     * Get evaluacion
+     *
+     * @return boolean
+     */
+    public function getEvaluacion()
+    {
+        return $this->evaluacion;
+    }
+
+    /**
+     * Set usuario
+     *
+     * @param \AppBundle\Entity\Usuario $usuario
+     *
+     * @return Parametrosinstanciasexpedientes
+     */
+    public function setUsuario(\AppBundle\Entity\Usuario $usuario = null)
+    {
+        $this->usuario = $usuario;
+
+        return $this;
+    }
+
+    /**
+     * Get usuario
+     *
+     * @return \AppBundle\Entity\Usuario
+     */
+    public function getUsuario()
+    {
+        return $this->usuario;
+    }
+
+    /**
+     * Set parametroinstancia
+     *
+     * @param \AppBundle\Entity\Parametrosinstancias $parametroinstancia
+     *
+     * @return Parametrosinstanciasexpedientes
+     */
+    public function setParametroinstancia(\AppBundle\Entity\Parametrosinstancias $parametroinstancia = null)
+    {
+        $this->parametroinstancia = $parametroinstancia;
+
+        return $this;
+    }
+
+    /**
+     * Get parametroinstancia
+     *
+     * @return \AppBundle\Entity\Parametrosinstancias
+     */
+    public function getParametroinstancia()
+    {
+        return $this->parametroinstancia;
+    }
+
+    /**
+     * Set expediente
+     *
+     * @param \AppBundle\Entity\Expedientes $expediente
+     *
+     * @return Parametrosinstanciasexpedientes
+     */
+    public function setExpediente(\AppBundle\Entity\Expedientes $expediente = null)
+    {
+        $this->expediente = $expediente;
+
+        return $this;
+    }
+
+    /**
+     * Get expediente
+     *
+     * @return \AppBundle\Entity\Expedientes
+     */
+    public function getExpediente()
+    {
+        return $this->expediente;
+    }
+}

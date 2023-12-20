@@ -1,0 +1,104 @@
+<?php
+
+namespace AppBundle\Entity;
+
+use Doctrine\ORM\Mapping as ORM;
+
+/**
+ * Historicosestadosexpedientesobservaciones
+ *
+ * @ORM\Table(name="historicosestadosexpedientesobservaciones", indexes={@ORM\Index(name="Ref2070", columns={"historicoestadoexpediente_id"}), @ORM\Index(name="Ref1871", columns={"observacionexpediente_id"})})
+ * @ORM\Entity(repositoryClass="AppBundle\Repository\HistoricosestadosexpedientesobservacionesRepository")
+ */
+class Historicosestadosexpedientesobservaciones
+{
+    /**
+     * @var integer
+     *
+     * @ORM\Column(name="id", type="integer", nullable=false)
+     * @ORM\Id
+     * @ORM\GeneratedValue(strategy="SEQUENCE")
+     * @ORM\SequenceGenerator(sequenceName="historicosestadosexpedientesobservaciones_id_seq", allocationSize=1, initialValue=1)
+     */
+    private $id;
+
+    /**
+     * @var \Historicosestadosexpedientes
+     *
+     * @ORM\ManyToOne(targetEntity="Historicosestadosexpedientes")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="historicoestadoexpediente_id", referencedColumnName="id")
+     * })
+     */
+    private $historicoestadoexpediente;
+
+    /**
+     * @var \Observacionesexpedientes
+     *
+     * @ORM\ManyToOne(targetEntity="Observacionesexpedientes")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="observacionexpediente_id", referencedColumnName="id")
+     * })
+     */
+    private $observacionexpediente;
+
+
+
+    /**
+     * Get id
+     *
+     * @return integer
+     */
+    public function getId()
+    {
+        return $this->id;
+    }
+
+    /**
+     * Set historicoestadoexpediente
+     *
+     * @param \AppBundle\Entity\Historicosestadosexpedientes $historicoestadoexpediente
+     *
+     * @return Historicosestadosexpedientesobservaciones
+     */
+    public function setHistoricoestadoexpediente(\AppBundle\Entity\Historicosestadosexpedientes $historicoestadoexpediente = null)
+    {
+        $this->historicoestadoexpediente = $historicoestadoexpediente;
+
+        return $this;
+    }
+
+    /**
+     * Get historicoestadoexpediente
+     *
+     * @return \AppBundle\Entity\Historicosestadosexpedientes
+     */
+    public function getHistoricoestadoexpediente()
+    {
+        return $this->historicoestadoexpediente;
+    }
+
+    /**
+     * Set observacionexpediente
+     *
+     * @param \AppBundle\Entity\Observacionesexpedientes $observacionexpediente
+     *
+     * @return Historicosestadosexpedientesobservaciones
+     */
+    public function setObservacionexpediente(\AppBundle\Entity\Observacionesexpedientes $observacionexpediente = null)
+    {
+        $this->observacionexpediente = $observacionexpediente;
+
+        return $this;
+    }
+
+    /**
+     * Get observacionexpediente
+     *
+     * @return \AppBundle\Entity\Observacionesexpedientes
+     */
+    public function getObservacionexpediente()
+    {
+        return $this->observacionexpediente;
+    }
+}

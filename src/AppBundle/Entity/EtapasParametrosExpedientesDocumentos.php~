@@ -1,0 +1,104 @@
+<?php
+
+namespace AppBundle\Entity;
+
+use Doctrine\ORM\Mapping as ORM;
+
+/**
+ * Etapasparametrosexpedientesdocumentos
+ *
+ * @ORM\Table(name="etapasparametrosexpedientesdocumentos", indexes={@ORM\Index(name="Ref3074", columns={"etapaparametroexpediente_id"}), @ORM\Index(name="Ref1675", columns={"evidenciaexpediente_id"})})
+ * @ORM\Entity(repositoryClass="AppBundle\Repository\Etapasparametrosexpedientesdocumentos")
+ */
+class Etapasparametrosexpedientesdocumentos
+{
+    /**
+     * @var integer
+     *
+     * @ORM\Column(name="id", type="integer", nullable=false)
+     * @ORM\Id
+     * @ORM\GeneratedValue(strategy="SEQUENCE")
+     * @ORM\SequenceGenerator(sequenceName="etapasparametrosexpedientesdocumentos_id_seq", allocationSize=1, initialValue=1)
+     */
+    private $id;
+
+    /**
+     * @var \Parametrosinstanciasexpedientes
+     *
+     * @ORM\ManyToOne(targetEntity="Parametrosinstanciasexpedientes")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="etapaparametroexpediente_id", referencedColumnName="id")
+     * })
+     */
+    private $etapaparametroexpediente;
+
+    /**
+     * @var \Evidenciasexpedientes
+     *
+     * @ORM\ManyToOne(targetEntity="Evidenciasexpedientes")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="evidenciaexpediente_id", referencedColumnName="id")
+     * })
+     */
+    private $evidenciaexpediente;
+
+
+
+    /**
+     * Get id
+     *
+     * @return integer
+     */
+    public function getId()
+    {
+        return $this->id;
+    }
+
+    /**
+     * Set etapaparametroexpediente
+     *
+     * @param \AppBundle\Entity\Parametrosinstanciasexpedientes $etapaparametroexpediente
+     *
+     * @return Etapasparametrosexpedientesdocumentos
+     */
+    public function setEtapaparametroexpediente(\AppBundle\Entity\Parametrosinstanciasexpedientes $etapaparametroexpediente = null)
+    {
+        $this->etapaparametroexpediente = $etapaparametroexpediente;
+
+        return $this;
+    }
+
+    /**
+     * Get etapaparametroexpediente
+     *
+     * @return \AppBundle\Entity\Parametrosinstanciasexpedientes
+     */
+    public function getEtapaparametroexpediente()
+    {
+        return $this->etapaparametroexpediente;
+    }
+
+    /**
+     * Set evidenciaexpediente
+     *
+     * @param \AppBundle\Entity\Evidenciasexpedientes $evidenciaexpediente
+     *
+     * @return Etapasparametrosexpedientesdocumentos
+     */
+    public function setEvidenciaexpediente(\AppBundle\Entity\Evidenciasexpedientes $evidenciaexpediente = null)
+    {
+        $this->evidenciaexpediente = $evidenciaexpediente;
+
+        return $this;
+    }
+
+    /**
+     * Get evidenciaexpediente
+     *
+     * @return \AppBundle\Entity\Evidenciasexpedientes
+     */
+    public function getEvidenciaexpediente()
+    {
+        return $this->evidenciaexpediente;
+    }
+}

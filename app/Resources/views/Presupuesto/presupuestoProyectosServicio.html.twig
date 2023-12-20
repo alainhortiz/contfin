@@ -1,0 +1,119 @@
+{% extends 'base.html.twig' %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('easyadmin/tema/DataTables-1.10.10/media/css/jquery.dataTables.css') }}"/>
+{% endblock %}
+
+{% block body %}
+    <div class="preload hidden">
+        <div class="logo"></div>
+        <div class="loader-frame">
+            <div class="loader1" id="loader1"></div>
+            <div class="loader2" id="loader2"></div>
+        </div>
+    </div>
+    <div class="container-fluid">
+        <div class="portlet light estilosForm">
+            <div class="portlet-title">
+                <div class="caption font-green">
+                    <i class="icon-diamond font-green"></i>
+                    <span class="caption-subject bold uppercase">
+                        PROYECTOS DEL SERVICIO : {{ servicio.codigoservicio~ ' - '~servicio.nombreservicio ~ '  DE LA SECCION :  ' ~ servicio.seccion.codigoseccion~' - '~servicio.seccion.nombreseccion }}
+                    </span>
+                </div>
+                <div class="tools">
+                    <a href="{{ path('verPresupuestoServicio' , { idServicio: servicio.id } ) }}" class="fa fa-arrow-circle-left fa-2x tooltips"  data-placement="left" data-original-title="Regresar">
+                    </a>
+                </div>
+            </div>
+            <div class="portlet-body">
+                <div class="row" style="margin-bottom: 20px">
+                    <div class="col-lg-12 col-md-12 col-sm-12">
+                        <div class="caption font-green" style="font-size: 19px; margin-top: 20px">
+                            <span class="caption-subject bold uppercase">
+                                <div class="col-lg-3 col-md-3 col-sm-3" {{ totalPresupuestosProyectosServicio['Presupuesto'] < 0 ? 'style="color: red"'}}>
+                                     Presupuesto: {{totalPresupuestosProyectosServicio['Presupuesto']|number_format(0, ',', '.')~' '~tipoMoneda }}
+                                </div>
+                                <div class="col-lg-3 col-md-3 col-sm-3" {{  totalPresupuestosProyectosServicio['Disponibilidad'] < 0 ? 'style="color: red"'}}>
+                                     Disponibilidad: {{ totalPresupuestosProyectosServicio['Disponibilidad']|number_format(0, ',', '.')~' '~tipoMoneda }}
+                                </div>
+                                <div class="col-lg-3 col-md-3 col-sm-3" {{ totalPresupuestosProyectosServicio['Compromiso'] < 0 ? 'style="color: red"'}}>
+                                    Compromiso: {{ totalPresupuestosProyectosServicio['Compromiso']|number_format(0, ',', '.')~' '~tipoMoneda }}
+                                </div>
+                                <div class="col-lg-3 col-md-3 col-sm-3" {{ totalPresupuestosProyectosServicio['Liquidez'] < 0 ? 'style="color: red"'}}>
+                                    Liquidez: {{ totalPresupuestosProyectosServicio['Liquidez']|number_format(0, ',', '.')~' '~tipoMoneda }}
+                                </div>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <div style="padding-top: 10px">
+                    <div class="portlet box grey-cascade">
+                        <div class="portlet-title" style="background-color: #2b3643">
+                            <div class="caption">
+                                <i class="fa fa-table"></i>
+                            </div>
+                            <div class="caption" style="float: right">
+                                <span>en miles de {{ tipoMoneda }}</span>
+                            </div>
+                        </div>
+                        <div class="portlet-body " style="background-color: #afbac0 ; overflow-x: auto">
+                            <table class="table table-striped table-bordered table-hover table-responsive myDataTable" id="dataPresupuesto">
+                                <thead>
+                                <tr>
+                                    <th>
+                                        Código Proyecto
+                                    </th>
+                                    <th>
+                                        Nombre Proyecto
+                                    </th>
+                                    <th>
+                                        Presupuesto
+                                    </th>
+                                    <th>
+                                        Disponibilidad
+                                    </th>
+                                    <th>
+                                        Liquidez
+                                    </th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% for presupuesto in presupuestosProyectosServicio %}
+                                    <tr >
+                                        <td>{{ presupuesto['codigoproyecto'] }}</td>
+                                        <td>{{ presupuesto['nombreproyecto'] }}</td>
+                                        <td style="text-align: right">{{ presupuesto['Presupuesto']|number_format(0, ',', '.')~' '~tipoMoneda }}</td>
+                                        <td style="text-align: right">{{ presupuesto['Disponibilidad']|number_format(0, ',', '.')~' '~tipoMoneda }}</td>
+                                        <td style="text-align: right">{{ presupuesto['Liquidez']|number_format(0, ',', '.')~' '~tipoMoneda }}</td>
+                                    </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="{{ asset('easyadmin/tema/DataTables-1.10.10/media/js/jquery.dataTables.js') }}"></script>
+    <script>
+        jQuery(document).ready(function() {
+
+            (function(){
+                {% if not (app.user.instancia.preorden >= 4  or is_granted("ROLE_SUPERUSUARIO" ) or app.user.instancia.preorden != '6') %}
+                    window.location.href = "{{ path('login') }}";
+                {% endif %}
+            })();
+
+            $('#dataPresupuesto').DataTable();
+
+
+        });
+    </script>
+{% endblock %}

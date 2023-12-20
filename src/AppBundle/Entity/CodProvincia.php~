@@ -1,0 +1,63 @@
+<?php
+
+namespace AppBundle\Entity;
+
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\ORM\Mapping as ORM;
+
+/**
+ * CodProvincia
+ *
+ * @ORM\Table(name="cod_provincia")
+ * @ORM\Entity(repositoryClass="AppBundle\Repository\CodProvinciaRepository")
+ */
+class CodProvincia
+{
+    /**
+     * @var int
+     *
+     * @ORM\Column(name="id", type="integer")
+     * @ORM\Id
+     * @ORM\GeneratedValue(strategy="AUTO")
+     */
+    private $id;
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(name="codigo", type="string", length=20, unique=true)
+     */
+    private $codigo;
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(name="nombre", type="string", length=100)
+     */
+    private $nombre;
+
+    /**
+     * @ORM\OneToMany(targetEntity="CodMunicipio", mappedBy="provincia")
+     */
+    private $municipios;
+
+    /**
+     * Provincia constructor.
+     */
+    public function __construct()
+    {
+        $this->municipios = new ArrayCollection();
+    }
+
+
+    /**
+     * Get id
+     *
+     * @return int
+     */
+    public function getId()
+    {
+        return $this->id;
+    }
+}
+

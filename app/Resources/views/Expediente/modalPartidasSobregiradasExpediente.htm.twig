@@ -1,0 +1,31 @@
+<div id="partidasSobregiradasExpediente"  data-backdrop="static" data-keyboard=false class="modal fade" role="dialog">
+    <div class="modal-dialog  portlet light estilosForm" style="width: 60vw">
+        <div class="portlet-title">
+            <div class="caption font-green">
+                <i class="icon-docs font-green"></i>
+                <span class="caption-subject bold uppercase">PARTIDAS SIN FONDOS</span>
+            </div>
+        </div>
+        <div class="portlet-body">
+            <section class="section-gray">
+                <div class="row" style="margin-left: 5px ; margin-bottom: 15px ; margin-top: 5px">
+                    <div class="col-lg-4 col-md-4 col-sm-4">
+                        <h6 style="color: #dc141b"><i class="fa fa-warning fa-2x"></i><strong style="font-size: 18px ; margin-left: 10px">ALERTA</strong></h6>
+                    </div>
+                    <div class="col-lg-12 col-md-12 col-sm-12">
+                        <p>
+                            Las siguientes partidas del expediente que desea aprobar no tienen disponibilidad para el monto a pagar.<br>
+                            Presione el botón aceptar para pasar el expediente al listado de expedientes sin crédito.<br>
+                            Presione cancelar para volver a la ventana de parametrizar el expediente.
+                        </p>
+                    </div>
+                </div>
+            </section>
+            <div id="tablaPartidasSinFondo"></div>
+            <div class="form-actions noborder" style="margin-top: 20px">
+                <button type="button" class="btn btn-secondary" id="btnPonerExpedienteSincredito">Aceptar</button>
+                <button type="button" class="btn btn-secondary" id="btnSalirPartidasSobregiradas">Cancelar</button>
+            </div>
+        </div>
+    </div>
+</div>

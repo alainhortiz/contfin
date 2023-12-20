@@ -1,0 +1,29 @@
+<div id="porcientoPresupuesto"  data-backdrop="static" data-keyboard=false class="modal fade" role="dialog">
+    <div class="modal-dialog  portlet light estilosForm" style="width: 20vw">
+        <div class="portlet-title">
+            <div class="caption font-green">
+                <i class="fa fa-sort-numeric-desc font-green"></i>
+                <span class="caption-subject bold uppercase">PORCIENTO  A OCULTAR</span>
+            </div>
+        </div>
+        <div class="portlet-body">
+            <form  id="formPorcientoReserva"   method="post" action="#">
+                <div class="row" style="margin-top: 20px">
+                    <div class="col-lg-8 col-lg-offset-2 col-md-8 col-md-offset-2 col-sm-8 col-sm-2 form-group">
+                        <div class="form-group form-md-line-input form-md-floating-label   input-icon right">
+                            <i style="color: #111111">%</i>
+                            <input type="text" onkeypress="return filterFloat(event,this);"  class="form-control" id="porciento" name="porciento">
+                            <label for="porciento">PORCIENTO</label>
+                        </div>
+                    </div>
+                </div >
+                <div class="modal-footer">
+                    <div class="form-actions noborder">
+                        <button type="button" class="btn btn-secondary" id="maceptarPorciento">ACEPTAR</button>
+                        <button type="button" class="btn btn-secondary" id="mcerrar" data-dismiss="modal" style="cursor: default">CERRAR</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,104 @@
+<?php
+
+namespace AppBundle\Entity;
+
+use Doctrine\ORM\Mapping as ORM;
+
+/**
+ * Etapasparametrosexpedientesobservaciones
+ *
+ * @ORM\Table(name="etapasparametrosexpedientesobservaciones", indexes={@ORM\Index(name="Ref3072", columns={"etapaparametroexpediente_id"}), @ORM\Index(name="Ref1873", columns={"observacionexpediente_id"})})
+ * @ORM\Entity(repositoryClass="AppBundle\Repository\EtapasparametrosexpedientesobservacionesRepository")
+ */
+class Etapasparametrosexpedientesobservaciones
+{
+    /**
+     * @var integer
+     *
+     * @ORM\Column(name="id", type="integer", nullable=false)
+     * @ORM\Id
+     * @ORM\GeneratedValue(strategy="SEQUENCE")
+     * @ORM\SequenceGenerator(sequenceName="etapasparametrosexpedientesobservaciones_id_seq", allocationSize=1, initialValue=1)
+     */
+    private $id;
+
+    /**
+     * @var \Parametrosinstanciasexpedientes
+     *
+     * @ORM\ManyToOne(targetEntity="Parametrosinstanciasexpedientes")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="etapaparametroexpediente_id", referencedColumnName="id")
+     * })
+     */
+    private $etapaparametroexpediente;
+
+    /**
+     * @var \Observacionesexpedientes
+     *
+     * @ORM\ManyToOne(targetEntity="Observacionesexpedientes")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="observacionexpediente_id", referencedColumnName="id")
+     * })
+     */
+    private $observacionexpediente;
+
+
+
+    /**
+     * Get id
+     *
+     * @return integer
+     */
+    public function getId()
+    {
+        return $this->id;
+    }
+
+    /**
+     * Set etapaparametroexpediente
+     *
+     * @param \AppBundle\Entity\Parametrosinstanciasexpedientes $etapaparametroexpediente
+     *
+     * @return Etapasparametrosexpedientesobservaciones
+     */
+    public function setEtapaparametroexpediente(\AppBundle\Entity\Parametrosinstanciasexpedientes $etapaparametroexpediente = null)
+    {
+        $this->etapaparametroexpediente = $etapaparametroexpediente;
+
+        return $this;
+    }
+
+    /**
+     * Get etapaparametroexpediente
+     *
+     * @return \AppBundle\Entity\Parametrosinstanciasexpedientes
+     */
+    public function getEtapaparametroexpediente()
+    {
+        return $this->etapaparametroexpediente;
+    }
+
+    /**
+     * Set observacionexpediente
+     *
+     * @param \AppBundle\Entity\Observacionesexpedientes $observacionexpediente
+     *
+     * @return Etapasparametrosexpedientesobservaciones
+     */
+    public function setObservacionexpediente(\AppBundle\Entity\Observacionesexpedientes $observacionexpediente = null)
+    {
+        $this->observacionexpediente = $observacionexpediente;
+
+        return $this;
+    }
+
+    /**
+     * Get observacionexpediente
+     *
+     * @return \AppBundle\Entity\Observacionesexpedientes
+     */
+    public function getObservacionexpediente()
+    {
+        return $this->observacionexpediente;
+    }
+}

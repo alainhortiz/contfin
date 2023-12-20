@@ -1,0 +1,56 @@
+<div id="addProyectosExpediente"  data-backdrop="static" data-keyboard=false class="modal fade" role="dialog">
+    <div class="modal-dialog  portlet light estilosForm" style="width: 60vw">
+        <div class="portlet-title">
+            <div class="caption font-green">
+                <i class="icon-notebook font-green"></i>
+                <span class="caption-subject bold uppercase">PROYECTOS</span>
+            </div>
+        </div>
+        <div class="portlet-body">
+            <div>
+                <div class="portlet"  style="margin-top: 20px">
+                    <div>
+                        <div class="row">
+                            <div class="col-lg-8 col-md-8 col-sm-8">
+                                <div class="form-group form-md-line-input form-md-floating-label" style="margin-top: 2px">
+                                    <select class="form-control" id="proyecto" name="proyecto" style="width: 100%">
+                                        <option id="inicioProyecto" value=""></option>
+                                    </select>
+                                    <label for="proyecto">PROYECTO</label>
+                                </div>
+                            </div>
+                            <div class="col-lg-3 col-md-3 col-sm-3">
+                                <div class="form-group form-md-line-input form-md-floating-label  input-icon right">
+                                    <i style="color: #111111">{{ tipoMoneda }}</i>
+                                    <input type="text" onkeypress="return filterFloat(event,this);"  class="form-control" id="montoProyecto" name="montoProyecto">
+                                    <label for="montoProyecto">MONTO</label>
+                                </div>
+                            </div>
+                            <div class="col-lg-1 col-md-1 col-sm-1">
+                                <span id="addProyecto" class="fa fa-plus-square fa-2x" style="color: #009490 ; margin-top: 30px" data-toggle="tooltip" data-placement="top" title="Agregar Proyecto"></span>
+                            </div>
+                        </div>
+                        <table id="proyectoTabla" class="table table-hover table-bordered table-dark" style="width: 100% ; margin-top: 15px" >
+                            <thead>
+                            <tr>
+                                <th>CODIGO</th>
+                                <th>DISPONIBILIDAD</th>
+                                <th>LIQUIDEZ</th>
+                                <th>MONTO</th>
+                                <th>ACCIÓN</th>
+                            </tr>
+                            </thead>
+                            <tbody id="tbody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="form-actions noborder" style="margin-top: 20px">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal" id="btnAceptarAddProyectos">Agregar Partida</button>
+                <button type="button" class="btn btn-secondary" id="btnSalirAddProyectos">Cancelar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+

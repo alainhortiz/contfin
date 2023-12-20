@@ -1,0 +1,1115 @@
+{% extends 'base.html.twig' %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <!-- BEGIN PAGE LEVEL STYLES -->
+    <link rel="stylesheet" href="{{ asset('easyadmin/tema/select2/select2-bootstrap.min.css') }}"/>
+    <!-- END PAGE LEVEL STYLES -->
+{% endblock %}
+
+
+{% block body %}
+    <div class="preload hidden">
+        <div class="logo"></div>
+        <div class="loader-frame">
+            <div class="loader1" id="loader1"></div>
+            <div class="loader2" id="loader2"></div>
+        </div>
+    </div>
+    <div class="container-fluid">
+        <div class="portlet light estilosForm">
+            <div class="portlet-title">
+                <div class="caption font-green">
+                    <i class="icon-folder-alt font-green"></i>
+                    <span class="caption-subject bold uppercase"> EDITAR EXPEDIENTE (DUPLICADO)</span>
+                </div>
+            </div>
+            <div class="portlet-body form">
+                <form role="form" id="formEditExpediente" ENCTYPE="multipart/form-data">
+                    <div class="form-body">
+                        <div class="row">
+                            <div class="col-lg-5 col-md-5">
+                                <div class="portlet">
+                                    <div class="col-lg-6 col-md-6 col-sm-6">
+                                        <div class="form-group form-md-line-input ">
+                                            <input type="text" disabled  class="form-control" id="numeroExpediente" name="numeroExpediente"  value="{{ expediente.getNumeroExpedienteMostrar() }}">
+                                            <label for="numeroExpediente">EXPEDIENTE</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-6 col-md-6 col-sm-6" style="margin-top: 35px">
+                                        <div class="md-checkbox" >
+                                            <input type="checkbox"  id="prioritario" {{ expediente.prioridad == 1  ? 'checked' }}  class="md-check" >
+                                            <label for="prioritario">
+                                                <span></span>
+                                                <span class="check"></span>
+                                                <span class="box"></span>
+                                                PRIORITARIO </label>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-6 col-md-6 col-sm-6" style="margin-top: 20px">
+                                        <div class="form-group form-md-line-input  input-icon right">
+                                            <i style="color: #dc141b" class="fa fa-exclamation tooltips hidden  fechaEntrada" data-placement="bottom" data-original-title="Este campo es obligatorio" ></i>
+                                            <input type="date" disabled class="form-control" id="fechaEntrada" name="fechaEntrada"  value="{{ expediente.fechaentrada|date('Y-m-d') }}">
+                                            <label for="fechaEntrada">FECHA</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-6 col-md-6 col-sm-6" style="margin-top: 20px">
+                                        <div class="form-group form-md-line-input  input-icon right">
+                                            <i style="color: #111111">{{ tipoMoneda }}</i>
+                                            <input type="text" disabled  class="form-control" id="montoSolicitado" name="montoSolicitado"  value="{{ expediente.importesolicitado|number_format(2, '.', ',') }}">
+                                            <label for="montoSolicitado">MONTO SOLICITADO</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-12 col-md-12 col-sm-12" style="margin-top: 20px">
+                                        <div class="form-group form-md-line-input  input-icon right">
+                                            <i style="color: #dc141b" class="fa fa-exclamation tooltips hidden  resumen" data-placement="bottom" data-original-title="Este campo es obligatorio" ></i>
+                                            <input type="text"  class="form-control" id="resumen" name="resumen"  value="{{ expediente.resumen }}">
+                                            <label for="resumen">RESUMEN</label>
+                                            <span class="help-block">máximo 255 caracteres </span>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-12 col-md-12 col-sm-12" style="margin-top: 20px">
+                                        <div class="form-group form-md-line-input">
+                                            <input type="text" disabled class="form-control" id="administradorCredito" name="administradorCredito"  value="{{ expediente.seccion.nombreseccion }}">
+                                            <label for="administradorCredito">ADMINISTRADOR DEL CRÉDITO</label>
+                                            <span class="help-block">máximo 255 caracteres </span>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-12 col-md-12 col-sm-12" style="margin-top: 20px">
+                                        <div class="form-group form-md-line-input  input-icon right">
+                                            <i style="color: #dc141b" class="fa fa-exclamation tooltips hidden  beneficiario" data-placement="bottom" data-original-title="Este campo es obligatorio" ></i>
+                                            <input type="text"  class="form-control" id="beneficiario" name="beneficiario"  value="{{ expediente.beneficiario }}">
+                                            <label for="beneficiario">BENEFICIARIO</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-12 col-md-12 col-sm-12" style="margin-top: 20px">
+                                        <div class="form-group form-md-line-input {{ expediente.ubicacionarchivo == '' ? 'form-md-floating-label' }} input-icon right">
+                                            <i style="color: #dc141b" class="fa fa-exclamation tooltips hidden  ubicacionArchivo" data-placement="bottom" data-original-title="Este campo es obligatorio" ></i>
+                                            <input type="text"  class="form-control" id="ubicacionArchivo" name="ubicacionArchivo"  value="{{ expediente.ubicacionarchivo }}">
+                                            <label for="ubicacionArchivo">UBICACIÓN DEL ARCHIVO</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-7 col-md-7" style="overflow-x:auto">
+                                <div class="portlet"  style="margin-top: 20px">
+                                    <div>
+                                        <label for="table" style="color: #009490"><strong>PARTIDAS PRESUPUESTARIAS</strong></label>
+                                        <div class="row">
+                                            <div class="col-lg-3 col-md-3 col-sm-3">
+                                                <div class="form-group" style="margin-top: 2px">
+                                                    <label for="servicio">SERVICIO</label>
+                                                    <select class="form-control" id="servicio" name="servicio" style="width: 100%">
+                                                        <option id="inicio" value=""></option>
+                                                        {% for servicio in  servicios %}
+                                                            <option class="cambioServicio" value="{{ servicio.id }}">{{ servicio.getSeccion().codigoseccion~servicio.codigoservicio ~' - '~ servicio.nombreservicio  }}</option>
+                                                        {% endfor %}
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-5 col-md-5 col-sm-5">
+                                                <div class="form-group " style="margin-top: 2px">
+                                                    <label for="numeroEconomico">NÚMERO ECONÓMICO</label>
+                                                    <select class="form-control " disabled id="numeroEconomico" name="numeroEconomico" style="width: 100%">
+                                                        <option value="" id="inicio2"></option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-3 col-md-3 col-sm-3">
+                                                <div class="form-group form-md-line-input form-md-floating-label  input-icon right">
+                                                    <i style="color: #111111">{{ tipoMoneda }}</i>
+                                                    <input type="text" onkeypress="return filterFloat(event,this);"  class="form-control" id="montoPartida" name="montoPartida">
+                                                    <label for="montoPartida">MONTO</label>
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-1 col-md-1 col-sm-1">
+                                                <span id="addNumeracionEconomica" class="fa fa-plus-square fa-2x" style="color: #009490 ; margin-top: 30px" data-toggle="tooltip" data-placement="top" title="Agregar Numeración"></span>
+                                            </div>
+                                        </div>
+                                        <table id="numeracionEconomicaTabla" class="table table-hover table-bordered table-dark" style="width: 100% ; margin-top: 15px" >
+                                            <thead>
+                                            <tr>
+                                                <th>SECCIÓN</th>
+                                                <th>SERVICIO</th>
+                                                <th>CAPÍTULO</th>
+                                                <th>ARTÍCULO</th>
+                                                <th>NUM. E</th>
+                                                <th>MONTO</th>
+                                                <th>ACCIÓN</th>
+                                            </tr>
+                                            </thead>
+                                            <tbody id="tbody">
+                                            {% set I = 0 %}
+                                            {% for partida in expediente.partidas %}
+                                                <tr data-id ="{{ I }}">
+                                                    <td>{{ partida.presupuestoservicio.servicio.seccion.codigoseccion }}</td>
+                                                    <td>{{ partida.presupuestoservicio.servicio.codigoservicio }}</td>
+                                                    <td>{{ partida.presupuestoservicio.getNumeroeconomico().capitulo.codigocapitulo  }}</td>
+                                                    <td>{{ partida.presupuestoservicio.getNumeroeconomico().articulo  }}</td>
+                                                    <td>{{ partida.presupuestoservicio.getNumeroeconomico().codigonumeroeconomico  }}</td>
+                                                    <td>{{ partida.importesolicitado|number_format(2, '.', ',')  }}</td>
+                                                    <td><a href="#" data-toggle="tooltip" data-placement="top" title="Eliminar Partida"><i class="glyphicon glyphicon-trash delete" style="color: red" ></i></a></td>
+                                                </tr>
+                                                {% set I = I + 1 %}
+                                            {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <div style="margin-top: 70px">
+                                        <label for="table" style="color: #009490"><strong>REGISTROS</strong></label>
+                                        <div class="row">
+                                            <div class="col-lg-3 col-md-3 col-sm-3">
+                                                <div class="form-group form-md-line-input  input-icon right">
+                                                    <i style="color: #dc141b" class="fa fa-exclamation tooltips hidden  fechaRegistro" data-placement="bottom" data-original-title="Este campo es obligatorio" ></i>
+                                                    <input type="date"   class="form-control" id="fechaRegistro" name="fechaRegistro">
+                                                    <label for="fechaRegistro">FECHA</label>
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-4 col-md-4 col-sm-4">
+                                                <div id="select2Ministerio" class="form-group" style="margin-top: 2px">
+                                                    <label for="ministerio" style="color: #888888">ENTIDAD</label>
+                                                    <select class="form-control "  id="ministerio" name="ministerio" style="width: 100%">
+                                                        <option id="inicio3" value=""></option>
+                                                        {% for ministerio in  ministerios  %}
+                                                            <option value="{{ ministerio.id }}">{{ ministerio.prefijoministerio ~' '~ ministerio.getSeccion().nombreseccion }}</option>
+                                                        {% endfor %}
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-2 col-md-2 col-sm-2">
+                                                <div class="form-group form-md-line-input form-md-floating-label input-icon right">
+                                                    <i style="color: #dc141b" class="fa fa-exclamation tooltips hidden  departamento" data-placement="bottom" data-original-title="Este campo es obligatorio" ></i>
+                                                    <input type="text"  class="form-control" id="departamento" name="departamento">
+                                                    <label for="departamento">DEPARTAMENTO</label>
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-2 col-md-2 col-sm-2">
+                                                <div class="form-group form-md-line-input form-md-floating-label input-icon right">
+                                                    <i style="color: #dc141b" class="fa fa-exclamation tooltips hidden  numeroRegistro" data-placement="bottom" data-original-title="Este campo es obligatorio" ></i>
+                                                    <input type="text"  class="form-control " id="numeroRegistro" name="numeroRegistro">
+                                                    <label for="numeroRegistro">REGISTRO</label>
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-1 col-md-1 col-sm-1">
+                                                <span id="addRegistro" class="fa fa-plus-square fa-2x" style="color: #009490 ; margin-top: 30px" data-toggle="tooltip" data-placement="top" title="Agregar Registro"></span>
+                                            </div>
+                                        </div>
+                                        <table id="registroTabla" class="table table-hover table-bordered table-dark" style="width: 100% ; margin-top: 15px" >
+                                            <thead>
+                                            <tr>
+                                                <th>FECHA</th>
+                                                <th>ENTIDAD</th>
+                                                <th>DEPARTAMENTO</th>
+                                                <th>REGISTRO</th>
+                                                <th>ACCIÓN</th>
+                                            </tr>
+                                            </thead>
+                                            <tbody id="tbody">
+                                            {% for registro in expediente.registros %}
+                                                <tr data-id ="{{ registro.id }}">
+                                                    <td>{{ registro.fecharegistro|date('Y-m-d') }}</td>
+                                                    <td>{{ registro.ministerio.prefijoministerio ~' '~ registro.ministerio.seccion.nombreseccion }}</td>
+                                                    <td>{{ registro.departamento }}</td>
+                                                    <td>{{ registro.numeroregistro }}</td>
+                                                    <td></td>
+                                                </tr>
+                                            {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-lg-5 col-md-5 col-sm-5" style="margin-top: 20px">
+                                <div class="portlet">
+                                    <div class="col-lg-12 col-md-12 col-sm-12" style="margin-top: 20px">
+                                        <div class="form-group form-md-line-input {{ expediente.descripcion == '' ? 'form-md-floating-label' }} input-icon right">
+                                            <i style="color: #dc141b" class="fa fa-exclamation tooltips hidden  descripcion" data-placement="bottom" data-original-title="Este campo es obligatorio" ></i>
+                                            <textarea  class="form-control" rows="5" id="descripcion" name="descripcion">{{ expediente.descripcion }}</textarea>
+                                            <label for="descripcion">DESCRIPCIÓN</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-7 col-md-7 col-sm-7" style="margin-top: 20px">
+                                <div class="portlet">
+                                    <div class="col-lg-12 col-md-12 col-sm-12" style="margin-top: 20px">
+                                        <div class="form-group form-md-line-input {{ expediente.observacion == '' ? 'form-md-floating-label' }} input-icon right" >
+                                            <i style="color: #dc141b" class="fa fa-exclamation tooltips hidden  observaciones" data-placement="bottom" data-original-title="Este campo es obligatorio" ></i>
+                                            <textarea  class="form-control" rows="5" id="observaciones" name="observaciones">{{ expediente.observacion }}</textarea>
+                                            <label for="observaciones">OBSERVACIONES</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+                <div class="row" style="margin-left: 10%">
+                    <form role="form" id="formAdjuntos" ENCTYPE="multipart/form-data" method="post">
+                        <div class="form-body">
+                            <div class="row" >
+                                <div class="col-lg-12 col-md-12" style="margin-top: 30px">
+                                    <div class="row">
+                                        <div class="col-lg-6 col-md-6">
+                                            <div class="form-control input-lg">
+                                                <input class="btn-secondary" type="file" id="fichero_usuario" name="fichero_usuario">
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-6 col-md-6">
+                                            <button type="button" class="btn btn-secondary" id="addAdjunto" disabled ><i class="icon-paper-clip"></i> Adjuntar</button>
+                                        </div>
+                                    </div>
+                                    <table id="adjuntosTabla" class="table table-hover table-bordered table-dark" style="width: 90% ; margin-top: 15px;" >
+                                        <thead>
+                                        <tr >
+                                            <th style="font-size: 14px;">DOCUMENTOS ADJUNTOS</th>
+                                            <th style="font-size: 14px;">ACCIÓN</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody id="tbody">
+                                        {% for evidencia in expediente.evidenciasExpedientes %}
+                                            <tr data-id ="{{ evidencia.id }}">
+                                                <td  style="font-size: 14px"><a href="{{ vinculo~'/'~evidencia.documento.fechasubida|date('Y')~'/'~evidencia.documento.nombredocumento }}" target="_blank">{{ evidencia.documento.nombredocumento }}</a></td>
+                                                <td>
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="form-actions noborder">
+                    <button type="button" class="btn btn-secondary" id="btnGuardar">Guardar</button>
+                    <button type="button" class="btn btn-secondary" id="btnSalir">Cancelar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ include('Expediente/modalAddProyectosExpediente.html.twig') }}
+    {{ parent() }}
+    <script src="{{ asset('easyadmin/tema/select2/select2.full.min.js') }}"></script>
+    <script>
+        jQuery(document).ready(function() {
+
+            (function(){
+                {% if not (app.user.instancia.preorden == '1' or app.user.instancia.preorden == '6') %}
+                    window.location.href = "{{ path('login') }}";
+                {% endif %}
+            })();
+
+            $('#servicio , #numeroEconomico , #ministerio').select2({
+
+                placeholder: 'Seleccione ...',
+                allowClear: true
+            });
+
+            $('#formEditExpediente input[type=text]').on('keyup' , function () {
+
+                if($(this).val().trim() == ''){ $(this).parents('div').addClass('form-md-floating-label'); }
+
+            });
+
+            //--------- abandonar el formulario -----------------
+            $('#btnSalir').on('click', function ()
+            {
+                $(".preload").removeClass('hidden');
+                window.location.href = "{{ path('addExpediente') }}";
+
+            });
+
+            //relacionar select servicio - N.E
+            $('#servicio').on('change' , function () {
+                var html = '';
+                var servicio = $('#servicio').val();
+                if (servicio == '') {
+                    $("#numeroEconomico").prop('disabled' , true);
+                    $("option").remove('.cambioNumeroEconomico');
+                }else {
+                    $("option").remove('.cambioNumeroEconomico');
+                    $("#inicio2").after('<option class="cambioNumeroEconomico"></option>');
+
+                    {% for presupuesto in  presupuestos %}
+                        var idServicio = '{{ presupuesto.servicio.id }}';
+
+                        if (servicio == idServicio) {
+                            var id = '{{ presupuesto.numeroeconomico.id }}';
+                            var name = '{{ presupuesto.numeroeconomico.codigonumeroeconomico~' - '~presupuesto.numeroeconomico.nombrenumeroeconomico }}';
+                            html += '<option class="cambioNumeroEconomico" value="' + id + '">' + name + '</option>';
+
+                        }
+                    {% endfor %}
+                    $(".cambioNumeroEconomico").replaceWith(html);
+                    $("#numeroEconomico").val('').prop('disabled' , false).select2({
+
+                        placeholder: 'Seleccione ...',
+                        allowClear: true
+                    });
+                }
+            });
+
+            //relacionar select N.E - Proyecto
+            $('#numeroEconomico').on('change' , function () {
+                var html = '';
+                var ne = $('#numeroEconomico').val();
+                if(ne == '73')
+                {
+                    var servicio = $('#servicio').val();
+                    if (servicio == '') {
+                        $("#proyecto").prop('disabled' , true);
+                        $("option").remove('.cambioProyecto');
+                    }else {
+                        $("option").remove('.cambioProyecto');
+                        $("#inicioProyecto").after('<option class="cambioProyecto"></option>');
+
+                        {% for proyecto in proyectos %}
+                        var idServicio = '{{ proyecto.presupuestoservicio.servicio.id }}';
+
+                        if (servicio == idServicio ) {
+                            var id = '{{ proyecto.id }}';
+                            {% set disponibilidad = proyecto.presupuesto - proyecto.valordisponible/1000 %}
+                            {% set liquidez = proyecto.presupuesto - proyecto.valorejecutado/1000 %}
+                            var name = '{{ 'Código: '~proyecto.codigoproyecto~' -  Disponibilidad: '~ disponibilidad|number_format(0, ',', '.')~' '~tipoMoneda~' - Liquidez: '~liquidez|number_format(0, ',', '.')~' '~tipoMoneda }}';
+                            html += '<option class="cambioProyecto" value="' + id + '">' + name + '</option>';
+
+                        }
+                        {% endfor %}
+                        $(".cambioProyecto").replaceWith(html);
+                        $('#addProyectosExpediente').modal('show');
+                    }
+                }
+            });
+
+            //agregar proyecto al arreglo
+            var montoProyecto = 0;
+            var proyectos = [];
+            var P = 0;
+
+            $('#addProyecto').on('click' , function () {
+                var proyecto = $('#proyecto').val();
+
+                if(  proyecto === '' ){
+                    $('#addProyectosExpediente').modal('hide');
+                    alertify.alert('<strong>Debe seleccionar un proyecto  para agregar .</strong>')
+                        .setHeader('<span class="glyphicon glyphicon-ban-circle" style="font-size: 20px"></span>' +
+                            '<h4 class="modal-title" style="display: inline-block; margin-left: 10px">Error</h4>')
+                        .set('label','Aceptar')
+                        .set('onok', function () {
+
+                            $('#addProyectosExpediente').modal('show');
+                        });
+                    return false;
+                }
+                if ( $("#montoProyecto").val().trim() == '' || $("#montoProyecto").val() == 0) {
+
+                    $('#addProyectosExpediente').modal('hide');
+                    alertify.alert('<strong>Debe teclear un monto para agregar un proyecto.</strong>')
+                        .setHeader('<span class="glyphicon glyphicon-ban-circle" style="font-size: 20px"></span>' +
+                            '<h4 class="modal-title" style="display: inline-block; margin-left: 10px">Error</h4>')
+                        .set('label','Aceptar')
+                        .set('onok', function () {
+
+                            $('#addProyectosExpediente').modal('show');
+                        });
+                    return false;
+                }
+
+                var monto = parseFloat($("#montoProyecto").val());
+
+                for ( index = 0; index < proyectos.length; index++){
+
+                    if(proyectos[index] != null){
+                        if(proyecto === proyectos[index]['proyecto']){
+
+                            $('#addProyectosExpediente').modal('hide');
+                            alertify.alert('<strong>Error: ya se agregó este proyecto.</strong>')
+                                .setHeader('<span class="glyphicon glyphicon-ban-circle" style="font-size: 20px"></span>' +
+                                    '<h4 class="modal-title" style="display: inline-block; margin-left: 10px">Error</h4>')
+                                .set('label','Aceptar')
+                                .set('onok', function () {
+
+                                    $('#addProyectosExpediente').modal('show');
+                                });
+                            return false;
+                        }
+                    }
+                }
+
+                var codProyecto = '';
+                var diponibilidad = '';
+                var liquidez = '';
+
+                {% for proyecto in  proyectos %}
+                var idProyecto = '{{ proyecto.id }}';
+
+                if (idProyecto == proyecto) {
+                    codProyecto = '{{ proyecto.codigoproyecto }}';
+                    diponibilidad = '{{ (proyecto.presupuesto - proyecto.valordisponible/1000)|number_format(0, ',', '.') }}';
+                    liquidez = '{{ (proyecto.presupuesto - proyecto.valorejecutado/1000)|number_format(0, ',', '.') }}';
+                }
+                {% endfor %}
+
+                $('#proyectoTabla tbody').append('<tr data-id="'+I+'"><td>'+ codProyecto +'</td><td>'+ diponibilidad +'</td><td>'+ liquidez +'</td><td>' + numberSeparator(monto) +
+                    '</td><td><a href="#" data-toggle="tooltip" data-placement="top" title="Eliminar Proyecto"><i class="glyphicon glyphicon-trash deleteProyecto" style="color: red" ></i></a>' +
+                    '</td></tr>');
+
+                proyectos.push({
+                    proyecto: proyecto,
+                    monto:  monto,
+                });
+
+                montoProyecto += parseFloat(monto);
+
+                $('[data-toggle="tooltip"]').tooltip();
+                P++;
+
+                $('#proyecto').val('').parents('div').addClass('form-md-floating-label');
+
+                $('#montoProyecto').val('').parents('div').addClass('form-md-floating-label');
+            });
+
+            //reiniciar modal
+            function reiniciarModal(){
+                $('#numeroEconomico').val('').select2('').select2({
+
+                    placeholder: 'Seleccione ...',
+                    allowClear: true
+                });
+                proyectos = [];
+                montoProyecto = 0;
+                $('#proyecto').val('').parents('div').addClass('form-md-floating-label');
+
+                $('#montoProyecto').val('').parents('div').addClass('form-md-floating-label');
+                $('#proyectoTabla tbody').empty();
+            }
+
+            //salir de la modal de proyectos
+            $('#btnSalirAddProyectos').on('click' , function () {
+
+                $('#addProyectosExpediente').modal('hide');
+                reiniciarModal();
+            });
+
+            //funcion que elimina una partida  del arreglo y de  la tabla
+            $('#proyectoTabla tbody').on('click', '.deleteProyecto', function () {
+                var row = $(this).parents('tr');
+                id = row.data('id');
+                row.fadeOut();
+                var montoResta = partidas[id]['monto'];
+                montoProyecto -= parseFloat(montoResta);
+                /*partidas.splice(id,1);*/
+                delete proyectos[id];
+            });
+
+            //funcion para armar el select de servicios una vez insertada una partida
+            function armarSelectServicio(seccion) {
+                var html = '';
+                $("option").remove('.cambioServicio');
+                $("#inicio").after('<option class="cambioServicio"></option>');
+
+                {% for servicio in  servicios %}
+
+                var idSeccion = '{{ servicio.getSeccion().id }}';
+
+                if (idSeccion == seccion || seccion == 0) {
+                    var id = {{ servicio.id }};
+                    var name = '{{ servicio.getSeccion().codigoseccion~servicio.codigoservicio ~'-'~ servicio.nombreservicio }}';
+                    html += '<option class="cambioServicio" value="' + id + '">' + name + '</option>';
+
+                }
+                {% endfor %}
+                $(".cambioServicio").replaceWith(html);
+            }
+
+            //variables para llenar el monto solicitado , el administrador del credito y las partidas
+            var administradorCredito = '{{ expediente.seccion.nombreseccion }}';
+            var montoSolicitado = 0;
+            var partidas = [];
+            var I = 0;
+
+            //agregando las partidas que trae el expediente al array
+            {% for partida in expediente.partidas %}
+
+                var idServicio = '{{ partida.presupuestoservicio.servicio.id }}';
+                var idNumeroEconomico = '{{ partida.presupuestoservicio.numeroeconomico.id }}';
+                var montoPartida = parseFloat('{{ partida.importesolicitado }}');
+
+                montoSolicitado += parseFloat(montoPartida);
+
+                partidas.push({
+                    servicio: idServicio,
+                    numeroEconomico: idNumeroEconomico,
+                    monto:  montoPartida,
+                });
+                I++;
+            {% endfor %}
+            armarSelectServicio('{{ expediente.seccion.id }}');
+
+            //funcion que agrega una partida  y la visualiza en la tabla
+            $('#btnAceptarAddProyectos').on('click', function(){
+
+                var servicio = $("#servicio").val();
+                var numeroEconomico =  $("#numeroEconomico").val();
+
+                if ( montoProyecto == 0) {
+                    $('#addProyectosExpediente').modal('hide');
+                    alertify.alert('<strong>Debe agregar proyectos para insertar esta partida.</strong>')
+                        .setHeader('<span class="glyphicon glyphicon-ban-circle" style="font-size: 20px"></span>' +
+                            '<h4 class="modal-title" style="display: inline-block; margin-left: 10px">Error</h4>')
+                        .set('label','Aceptar')
+                        .set('onok', function () {
+
+                            $('#addProyectosExpediente').modal('show');
+                        });
+                    return false;
+                }
+
+                var monto = montoProyecto;
+
+                for ( index = 0; index < partidas.length; index++){
+
+                    if(partidas[index] != null){
+                        if(servicio === partidas[index]['servicio'] && numeroEconomico === partidas[index]['numeroEconomico']){
+
+                            $('#addProyectosExpediente').modal('hide');
+                            alertify.alert('<strong>Error: ya existe una numeración económica con este servicio y este número económico.</strong>')
+                                .setHeader('<span class="glyphicon glyphicon-ban-circle" style="font-size: 20px"></span>' +
+                                    '<h4 class="modal-title" style="display: inline-block; margin-left: 10px">Error</h4>')
+                                .set('label','Aceptar')
+                                .set('onok', function () {
+
+                                    $('#addProyectosExpediente').modal('show');
+                                });
+                            return false;
+                        }
+                    }
+                }
+
+                var codServicio = '';
+                var idSeccion = '';
+                var codSeccion = '';
+                var nombreSeccion = '';
+                var codNE = '';
+                var codArticulo = '';
+                var codCapitulo = '';
+
+
+                {% for servicio in  servicios %}
+                var idServicio = '{{ servicio.id }}';
+
+                if (idServicio == servicio) {
+                    codServicio = '{{ servicio.codigoservicio }}';
+                    idSeccion = '{{ servicio.getSeccion().id }}';
+                    codSeccion = '{{ servicio.getSeccion().codigoseccion }}';
+                    nombreSeccion = '{{ servicio.getSeccion().nombreseccion }}';
+                }
+                {% endfor %}
+
+                if(administradorCredito == ''){
+                    armarSelectServicio(idSeccion);
+                    administradorCredito = nombreSeccion;
+                    $('#administradorCredito').val(nombreSeccion).parents('div').removeClass('form-md-floating-label');
+                }
+
+                {% for numeroEconomico in  numerosEconomicos %}
+                var idNumero = '{{ numeroEconomico.id }}';
+
+                if (idNumero == numeroEconomico) {
+                    codNE = '{{ numeroEconomico.codigonumeroeconomico }}';
+                    codArticulo = '{{ numeroEconomico.getArticulo() }}';
+                    codCapitulo = '{{ numeroEconomico.getCapitulo().codigocapitulo }}';
+                }
+                {% endfor %}
+
+                $('#numeracionEconomicaTabla tbody').append('<tr data-id="'+I+'"><td>'+ codSeccion +'</td><td>'+ codServicio +'</td><td>'+ codCapitulo +'</td><td>' + codArticulo +'</td><td>' + codNE +'</td><td>' + numberSeparator(monto) +'</td><td>' +
+                    '<a href="#" data-toggle="tooltip" data-placement="top" title="Eliminar Partida"><i class="glyphicon glyphicon-trash delete" style="color: red" ></i></a>' +
+                    '</td></tr>');
+
+                partidas.push({
+                    servicio: servicio,
+                    numeroEconomico: numeroEconomico,
+                    monto:  monto,
+                    proyectos: proyectos,
+                });
+
+                montoSolicitado += parseFloat(monto);
+                $('#montoSolicitado').parents('div').removeClass('form-md-floating-label');
+                $('#montoSolicitado').val(numberSeparator(montoSolicitado));
+
+
+
+                $('[data-toggle="tooltip"]').tooltip();
+                I++;
+
+                $('#servicio , #numeroEconomico').val('').select2('').select2({
+
+                    placeholder: 'Seleccione ...',
+                    allowClear: true
+                });
+
+                $('#montoPartida').val('').parents('div').addClass('form-md-floating-label');
+                $("#numeroEconomico").prop('disabled' , true);
+                $('#addProyectosExpediente').modal('hide');
+                reiniciarModal();
+            });
+
+            //funcion que agrega una partida y la visualiza en la tabla
+            $('#addNumeracionEconomica').on('click', function(){
+
+                var servicio = $("#servicio").val();
+                var numeroEconomico =  $("#numeroEconomico").val();
+
+                if(  servicio === '' ){
+                    alertify.alert('<strong>Debe seleccionar un servicio  para agregar una numeración económica.</strong>')
+                        .setHeader('<span class="glyphicon glyphicon-ban-circle" style="font-size: 20px"></span>' +
+                            '<h4 class="modal-title" style="display: inline-block; margin-left: 10px">Error</h4>')
+                        .set('label','Aceptar');
+                    return false;
+                }
+                if(numeroEconomico === '') {
+                    alertify.alert('<strong>Debe seleccionar un número económico para agregar una numeración económica.</strong>')
+                        .setHeader('<span class="glyphicon glyphicon-ban-circle" style="font-size: 20px"></span>' +
+                            '<h4 class="modal-title" style="display: inline-block; margin-left: 10px">Error</h4>')
+                        .set('label', 'Aceptar');
+                    return false;
+                }
+                if ( $("#montoPartida").val().trim() == '' ) {
+                    alertify.alert('<strong>Debe teclear un monto para agregar una numeración económica.</strong>')
+                        .setHeader('<span class="glyphicon glyphicon-ban-circle" style="font-size: 20px"></span>' +
+                            '<h4 class="modal-title" style="display: inline-block; margin-left: 10px">Error</h4>')
+                        .set('label','Aceptar');
+                    return false;
+                }
+
+                var monto = parseFloat($("#montoPartida").val());
+
+                for ( index = 0; index < partidas.length; index++){
+
+                    if(partidas[index] != null){
+                        if(servicio === partidas[index]['servicio'] && numeroEconomico === partidas[index]['numeroEconomico']){
+
+                            $('#addProyectosExpediente').modal('hide');
+                            alertify.alert('<strong>Error: ya existe una numeración económica con este servicio y este número económico.</strong>')
+                                .setHeader('<span class="glyphicon glyphicon-ban-circle" style="font-size: 20px"></span>' +
+                                    '<h4 class="modal-title" style="display: inline-block; margin-left: 10px">Error</h4>')
+                                .set('label','Aceptar')
+                                .set('onok', function () {
+
+                                    $('#addProyectosExpediente').modal('show');
+                                });
+                            return false;
+                        }
+                    }
+                }
+
+                var codServicio = '';
+                var idSeccion = '';
+                var codSeccion = '';
+                var nombreSeccion = '';
+                var codNE = '';
+                var codArticulo = '';
+                var codCapitulo = '';
+
+
+                {% for servicio in  servicios %}
+                    var idServicio = '{{ servicio.id }}';
+
+                    if (idServicio == servicio) {
+                        codServicio = '{{ servicio.codigoservicio }}';
+                        idSeccion = '{{ servicio.getSeccion().id }}';
+                        codSeccion = '{{ servicio.getSeccion().codigoseccion }}';
+                        nombreSeccion = '{{ servicio.getSeccion().nombreseccion }}';
+                    }
+                {% endfor %}
+
+                if(administradorCredito == ''){
+                    armarSelectServicio(idSeccion);
+                    administradorCredito = nombreSeccion;
+                    $('#administradorCredito').val(nombreSeccion).parents('div').removeClass('form-md-floating-label');
+                }
+
+                {% for numeroEconomico in  numerosEconomicos %}
+                    var idNumero = '{{ numeroEconomico.id }}';
+
+                    if (idNumero == numeroEconomico) {
+                        codNE = '{{ numeroEconomico.codigonumeroeconomico }}';
+                        codArticulo = '{{ numeroEconomico.getArticulo() }}';
+                        codCapitulo = '{{ numeroEconomico.getCapitulo().codigocapitulo }}';
+                    }
+                {% endfor %}
+
+                $('#numeracionEconomicaTabla tbody').append('<tr data-id="'+I+'"><td>'+ codSeccion +'</td><td>'+ codServicio +'</td><td>'+ codCapitulo +'</td><td>' + codArticulo +'</td><td>' + codNE +'</td><td>' + numberSeparator(monto) +'</td><td>' +
+                    '<a href="#" data-toggle="tooltip" data-placement="top" title="Eliminar Partida"><i class="glyphicon glyphicon-trash delete" style="color: red" ></i></a>' +
+                    '</td></tr>');
+
+                partidas.push({
+                    servicio: servicio,
+                    numeroEconomico: numeroEconomico,
+                    monto:  monto,
+                });
+
+                montoSolicitado += parseFloat(monto);
+                $('#montoSolicitado').parents('div').removeClass('form-md-floating-label');
+                $('#montoSolicitado').val(numberSeparator(montoSolicitado));
+
+
+
+                $('[data-toggle="tooltip"]').tooltip();
+                I++;
+
+                $('#servicio , #numeroEconomico').val('').select2('').select2({
+
+                    placeholder: 'Seleccione ...',
+                    allowClear: true
+                });
+
+                $('#montoPartida').val('');
+                $("#numeroEconomico").prop('disabled' , true);
+            });
+
+            //funcion que elimina una partida  del arreglo y de  la tabla
+            $('#numeracionEconomicaTabla tbody').on('click', '.delete', function () {
+                var row = $(this).parents('tr');
+                id = row.data('id');
+                row.fadeOut();
+                var montoResta = partidas[id]['monto'];
+                montoSolicitado -= parseFloat(montoResta);
+                /*partidas.splice(id,1);*/
+                delete partidas[id];
+                $('#montoSolicitado').val(numberSeparator(montoSolicitado));
+
+                if(montoSolicitado == 0){
+                    administradorCredito = '';
+                    armarSelectServicio(0);
+                    $('#administradorCredito').val('').parents('div').addClass('form-md-floating-label');
+                    $('#montoSolicitado').val('').parents('div').addClass('form-md-floating-label');
+                }
+            });
+
+            var registros = [];
+            var J = 0;
+            //funcion que agrega un registro  y la visualiza en la tabla
+            $('#addRegistro').on('click', function(){
+
+
+                var fecha =  $("#fechaRegistro").val();
+                var ministerio =  $("#ministerio").val();
+                var departamento = $("#departamento").val();
+                var numeroRegistro = $("#numeroRegistro").val();
+
+
+                if(  fecha.trim() == '' ){
+                    alertify.alert('<strong>Debe seleccionar una fecha  para agregar un registro.</strong>')
+                        .setHeader('<span class="glyphicon glyphicon-ban-circle" style="font-size: 20px"></span>' +
+                            '<h4 class="modal-title" style="display: inline-block; margin-left: 10px">Error</h4>')
+                        .set('label','Aceptar');
+                    return false;
+                }
+                if(ministerio == '') {
+                    alertify.alert('<strong>Debe seleccionar una entidad para agregar un registro.</strong>')
+                        .setHeader('<span class="glyphicon glyphicon-ban-circle" style="font-size: 20px"></span>' +
+                            '<h4 class="modal-title" style="display: inline-block; margin-left: 10px">Error</h4>')
+                        .set('label', 'Aceptar');
+                    return false;
+                }
+                if ( numeroRegistro.trim() == '') {
+                    alertify.alert('<strong>Debe teclear un número de para agregar un registro.</strong>')
+                        .setHeader('<span class="glyphicon glyphicon-ban-circle" style="font-size: 20px"></span>' +
+                            '<h4 class="modal-title" style="display: inline-block; margin-left: 10px">Error</h4>')
+                        .set('label','Aceptar');
+                    return false;
+                }
+                for ( index = 0; index < registros.length; index++){
+
+                    if(ministerio === registros[index]['ministerio'] && numeroRegistro === registros[index]['numeroRegistro']){
+
+                        alertify.alert('<strong>Error: ya existe un registro con esta entidad y este número de registro.</strong>')
+                            .setHeader('<span class="glyphicon glyphicon-ban-circle" style="font-size: 20px"></span>' +
+                                '<h4 class="modal-title" style="display: inline-block; margin-left: 10px">Error</h4>')
+                            .set('label','Aceptar');
+                        return false;
+                    }
+                }
+
+                var nombreMinisterio = '';
+
+                {% for ministerio in  ministerios %}
+                var idMinisterio = '{{ ministerio.id }}';
+
+                if (idMinisterio == ministerio) {
+                    nombreMinisterio = '{{ ministerio.prefijoministerio ~' '~ ministerio.seccion.nombreseccion }}';
+                }
+                {% endfor %}
+
+                $('#registroTabla tbody').append('<tr data-id="'+J+'"><td>'+ fecha +'</td><td>'+ nombreMinisterio +'</td><td>'+ departamento +'</td><td>'+ numeroRegistro +'</td><td>' +
+                    '<a href="#" data-toggle="tooltip" data-placement="top" title="Eliminar Registro"><i class="glyphicon glyphicon-trash delete" style="color: red" ></i></a>' +
+                    '</td></tr>');
+
+                registros.push({
+                    fecha: fecha,
+                    ministerio: ministerio,
+                    departamento:  departamento,
+                    numeroRegistro:  numeroRegistro,
+                });
+
+                $('[data-toggle="tooltip"]').tooltip();
+                J++;
+
+                $("#fechaRegistro").val('');
+                $('#ministerio').prop('disabled' , false).val('').select2('').select2({
+
+                    placeholder: 'Seleccione ...',
+                    allowClear: true
+                });
+                $('#departamento').val('');
+                $('#numeroRegistro').val('');
+
+            });
+
+            //funcion que elimina un registro  del arreglo y de  la tabla
+            $('#registroTabla tbody').on('click', '.delete', function () {
+                var row = $(this).parents('tr');
+                id = row.data('id');
+                row.fadeOut();
+                registros.splice(id,1);
+            });
+
+
+            $('#btnGuardar').on('click',function () {
+
+                var resumen = $('#resumen').val();
+                var beneficiario = $('#beneficiario').val();
+
+
+                if(resumen.trim() == '')
+                {
+                    var name = $('#resumen').prop('name');
+                    $('.'+name).removeClass('hidden');
+                    alertify.alert('<strong>El campo resumen es obligatorio , no puede quedar en blanco.</strong>')
+                        .setHeader('<span class="glyphicon glyphicon-ban-circle" style="font-size: 20px"></span>' +
+                            '<h4 class="modal-title" style="display: inline-block; margin-left: 10px">Error</h4>')
+                        .set('label','Aceptar');
+                    return false;
+                }
+
+                if(resumen.length > 255)
+                {
+                    alertify.alert('<strong>El campo resumen solo puede tener un máximo de 255 caracteres.</strong>')
+                        .setHeader('<span class="glyphicon glyphicon-ban-circle" style="font-size: 20px"></span>' +
+                            '<h4 class="modal-title" style="display: inline-block; margin-left: 10px">Error</h4>')
+                        .set('label','Aceptar');
+                    return false;
+                }
+
+                if(beneficiario.trim() == '')
+                {
+                    var name = $('#beneficiario').prop('name');
+                    $('.'+name).removeClass('hidden');
+                    alertify.alert('<strong>El campo beneficiario es obligatorio , no puede quedar en blanco.</strong>')
+                        .setHeader('<span class="glyphicon glyphicon-ban-circle" style="font-size: 20px"></span>' +
+                            '<h4 class="modal-title" style="display: inline-block; margin-left: 10px">Error</h4>')
+                        .set('label','Aceptar');
+                    return false;
+                }
+
+                if(beneficiario.length > 255)
+                {
+                    alertify.alert('<strong>El campo resumen solo puede tener un máximo de 255 caracteres.</strong>')
+                        .setHeader('<span class="glyphicon glyphicon-ban-circle" style="font-size: 20px"></span>' +
+                            '<h4 class="modal-title" style="display: inline-block; margin-left: 10px">Error</h4>')
+                        .set('label','Aceptar');
+                    return false;
+                }
+
+                if(montoSolicitado == 0){
+                    alertify.alert('<strong>Debe agregar al menos  una partida presupuestaria.</strong>')
+                        .setHeader('<span class="glyphicon glyphicon-ban-circle" style="font-size: 20px"></span>' +
+                            '<h4 class="modal-title" style="display: inline-block; margin-left: 10px">Error</h4>')
+                        .set('label','Aceptar');
+                    return false;
+                }
+
+                $(".preload").removeClass('hidden');
+
+                var prioritario = 0;
+                if ($('#prioritario').prop('checked')) {
+                    prioritario = 1;
+                }
+
+                var mat_datos = {
+
+                    idExpediente: '{{ expediente.id }}',
+                    prioritario: prioritario,
+                    montoSolicitado: montoSolicitado,
+                    resumen: resumen,
+                    beneficiario: beneficiario,
+                    descripcion: $("#descripcion").val(),
+                    observaciones: $("#observaciones").val().trim(),
+                    partidas: partidas,
+                    registros: registros,
+                    nombreSeccion: administradorCredito,
+                    ubicacionArchivo: $("#ubicacionArchivo").val(),
+                };
+
+                $.ajax({
+                    type: "POST",
+                    dataType: "html",
+                    url: '{{ path("updateExpediente") }}',
+                    data: mat_datos
+                }).done(function (data) {
+
+                    $(".preload").addClass('hidden');
+                    if(data == 'ok'){
+                        var numero = '{{ expediente.numeroExpedienteMostrar }}';
+                        alertify.alert('<strong>El expediente número  '+ numero +' ha sido modificado correctamente</strong>')
+                            .setHeader('<span class="glyphicon glyphicon-ok-circle" style="font-size: 20px"></span>' +
+                                '<h4 class="modal-title" style="display: inline-block; margin-left: 10px">Confirmacion</h4>')
+                            .set('label','Aceptar')
+                            .set('onok', function () {
+
+                                $(".preload").removeClass('hidden');
+                                window.location.href = "{{ path('addExpediente') }}";
+                            });
+                    }else{
+                        alertify.alert('<strong>'+ data +'</strong>')
+                            .setHeader('<span class="glyphicon glyphicon-ban-circle" style="font-size: 20px"></span>' +
+                                '<h4 class="modal-title" style="display: inline-block; margin-left: 10px">Error</h4>')
+                            .set('label','Aceptar')
+                    }
+                });
+            });
+
+            //funcion que agrega un registro  y la visualiza en la tabla
+            //js para agregar adjuntos inicio
+            // Validar extensiones del adjunto
+            $("#fichero_usuario").on('change', function(e){
+                var fichero = $("#fichero_usuario").val();
+                var input = document.getElementById('fichero_usuario');
+                var file = input.files[0]; //2 000 000
+                var allowedExtensions = /(.doc|.docx|.xls|.xlsx|.ppt|.pptx|.pdf|.rar|.zip)$/i;
+
+                if(!allowedExtensions.exec(fichero)) {
+                    alertify.alert('<strong>Sólo se pueden subir archivos con extensiones: .docx, .xlsx, .pptx .pdf, .rar, .zip.</strong>')
+                        .setHeader('<span class="glyphicon glyphicon-ban-circle" style="font-size: 20px"></span>' +
+                            '<h4 class="modal-title" style="display: inline-block; margin-left: 10px">Error</h4>')
+                        .set('label', 'Aceptar');
+                    $("#fichero_usuario").val('');
+                    return false;
+                } else if (file.size > 2000000)  {
+                    alertify.alert('<strong>El tamano del fichero no puede ser mayor que 2 MB.</strong>')
+                        .setHeader('<span class="glyphicon glyphicon-ban-circle" style="font-size: 20px"></span>' +
+                            '<h4 class="modal-title" style="display: inline-block; margin-left: 10px">Error</h4>')
+                        .set('label', 'Aceptar');
+                    $("#fichero_usuario").val('');
+                    return false;
+                } else {
+                    $("#addAdjunto").prop('disabled' , false);
+                }
+            });
+
+            var K = 0;
+            //funcion que agrega un adjunto  y la visualiza en la tabla
+            $('#addAdjunto').on('click', function(e){
+
+                var fichero = $("#fichero_usuario").val();
+                if (fichero==='') {
+                    alertify.alert('<strong>Seleccione un fichero adjunto</strong>')
+                        .setHeader('<span class="glyphicon glyphicon-ban-circle" style="font-size: 20px"></span>' +
+                            '<h4 class="modal-title" style="display: inline-block; margin-left: 10px">Error</h4>')
+                        .set('label','Aceptar');
+                    return false;
+                }
+
+                $("#addAdjunto").prop('disabled' , true);
+
+                $(".preload").removeClass('hidden');
+
+                e.preventDefault();
+                /*var f = $(this);*/
+                var formData = new FormData(document.getElementById("formAdjuntos"));
+                /* formData.append("dato", "valor");*/
+                //formData.append(f.attr("name"), $(this)[0].files[0]);
+
+                $.ajax({
+                    url: '{{ path('adjuntoInsertar' , {idExpediente: expediente.id}) }}',
+                    type: "post",
+                    dataType: "json",
+                    data: formData,
+                    cache: false,
+                    contentType: false,
+                    processData: false
+                }).done(function (data) {
+
+                    $(".preload").addClass('hidden');
+
+                    var obj = JSON.parse(data);
+
+                    if (obj['valido']) {
+
+                        $('#adjuntosTabla tbody').append('<tr data-id="'+ obj['idDocumento'] +'"><td  style="font-size: 14px;"><a href="' + obj['vinculo'] + '" target="_blank">'+ obj['nombreAdjunto'] +'</a></td><td>'+
+                            '<a href="#" data-toggle="tooltip" data-placement="top" title="Eliminar Adjunto"><i class="glyphicon glyphicon-trash delete" style="color: red" ></i></a>' +
+                            '</td></tr>');
+                    } else {
+                        alertify.alert('<strong>' + obj['mensaje'] + '</strong>')
+                            .setHeader('<span class="glyphicon glyphicon-ban-circle" style="font-size: 20px"></span>' +
+                                '<h4 class="modal-title" style="display: inline-block; margin-left: 10px">Error</h4>')
+                            .set('label','Aceptar');
+                        return false;
+
+                    }
+
+                    $('[data-toggle="tooltip"]').tooltip();
+
+                    $("#fichero_usuario").val('');
+
+                });
+
+            });
+
+            //funcion que elimina un registro del adjunto seleccionado y  de la tabla
+            $('#adjuntosTabla tbody').on('click', '.delete', function () {
+
+                var row = $(this).parents('tr');
+
+                var mat_datos = {
+                    idDocumento: row.data('id'),
+                    idExpediente: 0
+                };
+
+                alertify.confirm('Basic: false').set('message', 'Seguro que desea eliminar el adjunto').set('onok', function(){
+
+                    $(".preload").removeClass('hidden');
+
+                    $.ajax({
+                        type: "POST",
+                        dataType: "html",
+                        url: '{{ path("adjuntoEliminar") }}',
+                        data: mat_datos
+                    }).done(function (data) {
+                        $(".preload").addClass('hidden');
+                        if(data === 'ok'){
+                            //Elimina de la tabla
+                            id = row.data('id');
+                            row.fadeOut();
+                        }else {
+                            alertify.alert('<strong>'+data+'</strong>')
+                                .setHeader('<span class="glyphicon glyphicon-ok-circle" style="font-size: 20px"></span>' +
+                                    '<h4 class="modal-title" style="display: inline-block; margin-left: 10px">Confirmación</h4>')
+                                .set('label','Aceptar')
+                        }
+                    });
+                });
+
+            });
+            //js para agregar adjuntos fin
+
+        });
+    </script>
+{% endblock %}

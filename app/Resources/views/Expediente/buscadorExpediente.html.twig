@@ -1,0 +1,246 @@
+{% extends 'base.html.twig' %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <!-- BEGIN PAGE LEVEL STYLES -->
+    <link rel="stylesheet" href="{{ asset('easyadmin/tema/select2/select2-bootstrap.min.css') }}"/>
+    <link rel="stylesheet" href="{{ asset('easyadmin/tema/DataTables-1.10.10/media/css/jquery.dataTables.css') }}"/>
+    <link rel="stylesheet" href="{{ asset('easyadmin/plugins/bootstrap-datepicker/css/datepicker3.css') }}"/>
+    <!-- END PAGE LEVEL STYLES -->
+{% endblock %}
+
+
+{% block body %}
+    <div class="preload hidden">
+        <div class="logo"></div>
+        <div class="loader-frame">
+            <div class="loader1" id="loader1"></div>
+            <div class="loader2" id="loader2"></div>
+        </div>
+    </div>
+    <div class="container-fluid">
+        <div class="portlet light estilosForm">
+            <div class="portlet-title">
+                <div class="caption font-green">
+                    <i class="icon-folder-alt font-green"></i>
+                    <span class="caption-subject bold uppercase"> BUSCAR EXPEDIENTE</span>
+                </div>
+                <div class="tools">
+                    <a href="#" class="reload tooltips" id="btnReload" data-placement="top" data-original-title="Reiniciar">
+                    </a>
+                </div>
+            </div>
+            <div class="portlet-body form">
+                <form role="form" id="buscarExpedienteForm">
+                    <div class="form-body">
+                        <div class="row">
+                            <div class="col-lg-3 col-md-3 col-sm-3">
+                                <div class="form-group form-md-line-input form-md-floating-label">
+                                    <input type="text"  class="form-control" id="numeroExpediente" name="numeroExpediente">
+                                    <label for="numeroExpediente">EXPEDIENTE</label>
+                                </div>
+                            </div>
+                            <div class="col-lg-3 col-md-3 col-sm-3">
+                                <div class="form-group " style="margin-top: 2px">
+                                    <label for="numeroEconomico">NÚMERO ECONÓMICO</label>
+                                    <select class="form-control " id="numeroEconomico" name="numeroEconomico" style="width: 100%">
+                                        <option value=""></option>
+                                        {% for numero in  numerosEconomicos %}
+                                            <option value="{{ numero.id }}">
+                                                {{ numero.codigonumeroeconomico~' - '~numero.nombrenumeroeconomico }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-lg-3 col-md-3 col-sm-3">
+                                <div class="form-group " style="margin-top: 2px">
+                                    <label for="seccion">ADMINISTRADOR DEL CRÉDITO</label>
+                                    <select class="form-control " id="seccion" name="seccion" style="width: 100%">
+                                        <option value=""></option>
+                                        {% for seccion in  secciones %}
+                                            <option value="{{ seccion.id }}">{{ seccion.nombreseccion}}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-lg-3 col-md-3 col-sm-3">
+                                <div class="form-group form-md-line-input  form-md-floating-label">
+                                    <select class="form-control" id="estado" name="estado" >
+                                        <option value=""></option>
+                                        {% for estado in  estados %}
+                                            <option value="{{ estado.id }}">{{ estado.nombreestado }}</option>
+                                        {% endfor %}
+                                    </select>
+                                    <label for="estado">ESTADO</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row" style="margin-top: 20px">
+
+                            <div class="col-lg-3 col-md-3 col-sm-3">
+                                <div class="form-group form-md-line-input form-md-floating-label">
+                                    <input type="text"  class="form-control" id="beneficiario" name="beneficiario">
+                                    <label for="beneficiario">BENEFICIARIO</label>
+                                </div>
+                            </div>
+                            <div class="col-lg-3 col-md-3 col-sm-3">
+                                <div class="form-group form-md-line-input form-md-floating-label">
+                                    <input type="text" onkeypress="return filterFloat(event,this);"  class="form-control" id="montoSolicitado" name="montoSolicitado">
+                                    <label for="montoSolicitado">MONTO SOLICITADO</label>
+                                </div>
+                            </div>
+                            <div class="col-lg-1 col-md-1 col-sm-1" style="margin-top: 20px">
+                                <div class="clearfix">
+                                    <div class="btn-group " data-toggle="buttons">
+                                        <label class="btn btn-default" id="menor" >
+                                            <input type="radio" class="toggle"> < </label>
+                                        <label class="btn btn-default" id="igual" >
+                                            <input type="radio" class="toggle"> = </label>
+                                        <label class="btn btn-default" id="mayor">
+                                            <input type="radio" class="toggle"> > </label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-5 col-md-5 col-sm-5" style="margin-top: 10px">
+                                <div class="form-group">
+                                    <label class="control-label col-md-3" style="text-align: right">RANGO DE FECHA</label>
+                                    <div class="col-md-4">
+                                        <div class="input-group input-large date-picker input-daterange"  data-date-format="dd-mm-yyyy">
+                                            <input type="text" class="form-control" name="from" id="from">
+                                            <span class="input-group-addon">
+												hasta </span>
+                                            <input type="text" class="form-control" name="to" id="to">
+                                        </div>
+                                        <!-- /input-group -->
+                                        <span id="clear" class="help-block">Seleccione un rango de fecha</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row" style="margin-top: 20px">
+                            <div class="col-lg-3 col-md-3 col-sm-3">
+                                <div class="form-group" style="margin-top: 2px">
+                                    <label for="servicio">SERVICIO</label>
+                                    <select class="form-control" id="servicio" name="servicio" style="width: 100%">
+                                        <option id="inicio" value=""></option>
+                                        {% for servicio in  servicios %}
+                                            <option value="{{ servicio.id }}">{{ servicio.getSeccion().codigoseccion~servicio.codigoservicio ~' - '~ servicio.nombreservicio  }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-lg-3 col-md-3 col-sm-3">
+                                <div class="form-group form-md-line-input form-md-floating-label">
+                                    <input type="text"  class="form-control" id="numeroRegistro" name="numeroRegistro">
+                                    <label for="numeroRegistro">NUMERO DE REGISTRO</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-actions noborder">
+                        <button type="button" class="btn btn-secondary" id="btnBuscar">Buscar</button>
+                        <button type="button" class="btn btn-secondary" id="btnSalir">Cancelar</button>
+                    </div>
+                </form>
+            </div>
+            {# Contiene el datatable del resultado de la busqueda #}
+            <div id="containerResultado"></div>
+        </div>
+    </div>
+    {# Contiene el datatable del resultado de la busqueda #}
+    <div id="containerResultado"></div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="{{ asset('easyadmin/tema/select2/select2.full.min.js') }}"></script>
+    <script src="{{ asset('easyadmin/tema/DataTables-1.10.10/media/js/jquery.dataTables.js') }}"></script>
+    <script src="{{ asset('easyadmin/plugins/bootstrap-datepicker/js/bootstrap-datepicker.js') }}"></script>
+    <script src="{{ asset('easyadmin/tema/pages/js/components-pickers.js') }}"></script>
+    <script>
+        jQuery(document).ready(function() {
+
+            (function(){
+                {% if not (is_granted("ROLE_PROCESADOR") or  is_granted("ROLE_SUPERVISOR")or  is_granted("ROLE_PAGADOR") or  is_granted("ROLE_MINISTRO") or is_granted("ROLE_SUPERUSUARIO") ) %}
+                    window.location.href = "{{ path('login') }}";
+                {% endif %}
+            })();
+
+            ComponentsPickers.init();
+
+            $('#seccion , #numeroEconomico ,#servicio').select2({
+
+                placeholder: 'Seleccione ...',
+                allowClear: true
+            });
+
+
+            //--------- abandonar el formulario -----------------
+            $('#btnSalir').on('click', function ()
+            {
+                window.location.href = "{{ path('inicio') }}";
+
+            });
+
+            //--------- reiniciar el formulario -----------------
+            $('#btnReload').on('click', function ()
+            {
+                window.location.reload();
+
+            });
+
+            $('#btnBuscar').on('click',function () {
+
+                var operacion   = '=';
+                if($('#menor').hasClass('active')){
+                    operacion = '<'
+                }
+                if($('#mayor').hasClass('active')){
+                    operacion = '>'
+                }
+
+                $(".preload").removeClass('hidden');
+
+                var mat_datos = {
+
+                    numeroExpediente: $("#numeroExpediente").val(),
+                    numeroEconomico: $("#numeroEconomico").val(),
+                    numeroRegistro: $("#numeroRegistro").val(),
+                    importeSolicitado: $("#montoSolicitado").val(),
+                    beneficiario: $("#beneficiario").val(),
+                    seccion: $("#seccion").val(),
+                    servicio: $("#servicio").val(),
+                    estadoExpediente: $("#estado").val(),
+                    fechaInicial: $("#from").val(),
+                    fechaFinal: $("#to").val(),
+                    operacion: operacion,
+                };
+
+                $.ajax({
+                    type: "POST",
+                    dataType: "html",
+                    url: '{{ path("localizarExpediente") }}',
+                    data: mat_datos
+                }).done(function (data) {
+
+                    $(".preload").addClass('hidden');
+
+                    if(data.indexOf('dataExpediente') != -1){
+
+                        $('#containerResultado').replaceWith(data).css("display","block");
+
+
+                    }else{
+                        alertify.alert('<strong>'+ data +'</strong>')
+                            .setHeader('<span class="glyphicon glyphicon-ban-circle" style="font-size: 20px"></span>' +
+                                '<h4 class="modal-title" style="display: inline-block; margin-left: 10px">Error</h4>')
+                            .set('label','Aceptar')
+                    }
+                });
+
+            });
+
+        });
+    </script>
+{% endblock %}

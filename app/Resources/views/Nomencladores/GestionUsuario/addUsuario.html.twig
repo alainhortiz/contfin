@@ -1,0 +1,238 @@
+{% extends 'base.html.twig' %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('easyadmin/plugins/multiselect/css/multi-select.css') }}"/>
+{% endblock %}
+
+{% block body %}
+    <div class="preload hidden">
+        <div class="logo"></div>
+        <div class="loader-frame">
+            <div class="loader1" id="loader1"></div>
+            <div class="loader2" id="loader2"></div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-8 col-md-offset-2">
+            <div class="portlet light estilosForm">
+                <div class="portlet-title">
+                    <div class="caption font-green">
+                        <i class="icon-user font-green"></i>
+                        <span class="caption-subject bold uppercase"> AGREGAR USUARIO</span>
+                    </div>
+                </div>
+                <div class="portlet-body form">
+                    <form role="form" id="addUsuario">
+                        <div class="form-body">
+                            <div class="row">
+                                <div class="col-lg-3 col-md-3 col-sm-3">
+                                    <div class="form-group form-md-line-input form-md-floating-label input-icon right">
+                                        <i style="color: #dc141b" class="fa fa-exclamation tooltips hidden  username" data-placement="bottom" data-original-title="Este campo es obligatorio" ></i>
+                                        <input type="text"  class="form-control" id="username" name="username">
+                                        <label for="username">USUARIO</label>
+                                    </div>
+                                </div>
+                                <div class="col-lg-3 col-md-3 col-sm-3">
+                                    <div class="form-group form-md-line-input form-md-floating-label input-icon right">
+                                        <i style="color: #dc141b" class="fa fa-exclamation tooltips hidden  nombre" data-placement="bottom" data-original-title="Este campo es obligatorio" ></i>
+                                        <input type="text" class="form-control" id="nombre" name="nombre">
+                                        <label for="nombre">NOMBRE</label>
+                                    </div>
+                                </div>
+                                <div class="col-lg-3 col-md-3 col-sm-3">
+                                    <div class="form-group form-md-line-input form-md-floating-label input-icon right">
+                                        <i style="color: #dc141b" class="fa fa-exclamation tooltips hidden  primerApellido" data-placement="bottom" data-original-title="Este campo es obligatorio" ></i>
+                                        <input type="text" class="form-control" id="primerApellido" name="primerApellido">
+                                        <label for="primerApellido">PRIMER APELLIDO</label>
+                                    </div>
+                                </div>
+                                <div class="col-lg-3 col-md-3 col-sm-3">
+                                    <div class="form-group form-md-line-input form-md-floating-label input-icon right">
+                                        <i style="color: #dc141b" class="fa fa-exclamation tooltips hidden  segundoApellido" data-placement="bottom" data-original-title="Este campo es obligatorio" ></i>
+                                        <input type="text" class="form-control" id="segundoApellido" name="segundoApellido">
+                                        <label for="segundoApellido">SEGUNDO APELLIDO</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row" style="margin-top: 20px">
+                                <div class="col-lg-3 col-md-3 col-sm-3">
+                                    <div class="form-group form-md-line-input form-md-floating-label input-icon right">
+                                        <i style="color: #dc141b" class="fa fa-exclamation tooltips hidden  email" data-placement="bottom" data-original-title="Este campo es obligatorio" ></i>
+                                        <input type="email" class="form-control" id="email" name="email">
+                                        <label for="email">EMAIL</label>
+                                    </div>
+                                </div>
+                                <div class="col-lg-3 col-md-3 col-sm-3">
+                                    <div class="form-group form-md-line-input form-md-floating-label input-icon right">
+                                        <i style="color: #dc141b" class="fa fa-exclamation tooltips hidden  telefono" data-placement="bottom" data-original-title="Este campo es obligatorio" ></i>
+                                        <input type="tel" class="form-control" id="telefono" name="telefono">
+                                        <label for="telefono">TELEFONO</label>
+                                    </div>
+                                </div>
+                                <div class="col-lg-3 col-md-3 col-sm-3">
+                                    <div class="form-group form-md-line-input  form-md-floating-label input-icon right" >
+                                        <i style="color: #dc141b; margin-right: 10px" class="fa fa-exclamation tooltips hidden  instancia" data-placement="bottom" data-original-title="Este campo es obligatorio" ></i>
+                                        <select class="form-control" id="instancia" name="instancia" >
+                                            <option value="0"></option>
+                                            {% for instancia in  instancias %}
+                                                {% if instancia.id != '1' %}
+                                                    <option value="{{ instancia.id }}">{{ instancia.nombreinstancia }}</option>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </select>
+                                        <label for="instancia">INSTANCIA</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row" style="margin-top: 40px">
+                                <div class="col-lg-6 col-lg-offset-3" style="border-top: none">
+                                    <div class="form-group">
+                                        <label class="control-label " for="multi-roles"><strong>Seleccione Roles:</strong></label>
+                                        <select multiple="multiple" id="multi-roles" name="multi-roles" class="form-control">
+
+                                            {% for role in roles %}
+
+                                                {% if not (role.nombre == 'ROLE_SUPERUSUARIO')  %}
+
+                                                    <option  value={{ role.id }}>{{ role.nombre }}</option>
+
+                                                {% endif %}
+
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-actions noborder">
+                            <button type="button" class="btn btn-secondary" id="btnGuardar">Guardar</button>
+                            <button type="button" class="btn btn-secondary" id="btnSalir">Cancelar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="{{ asset('easyadmin/plugins/multiselect/js/jquery.multi-select.js') }}"></script>
+    <script>
+        jQuery(document).ready(function() {
+
+            (function(){
+                {% if not (is_granted("ROLE_ADMINISTRADOR") or is_granted("ROLE_SUPERUSUARIO")) %}
+                    window.location.href = "{{ path('login') }}";
+                {% endif %}
+            })();
+
+            $('#multi-roles').multiSelect();
+
+            //--------- abandonar el formulario -----------------
+            $('#btnSalir').on('click', function ()
+            {
+                window.location.href = "{{ path('gestionarUsuarios') }}";
+
+            });
+
+            $('#btnGuardar').on('click',function () {
+
+                var errores = 0;
+                $('#addUsuario input[type=text]').each(function () {
+
+                    var name = $(this).prop('name');
+                    if($(this).val().trim() == ''){
+                        $('.'+name).removeClass('hidden');
+                        errores++;
+                    }else {
+                        $('.'+name).addClass('hidden');
+                    }
+                });
+
+                $('#addUsuario select').each(function () {
+
+                    var name = $(this).prop('name');
+                    if($(this).val() == '0'){
+                        $('.'+name).removeClass('hidden');
+                        errores++;
+                    }else {
+                        $('.'+name).addClass('hidden');
+                    }
+                });
+                if(errores !== 0) return false;
+
+                if(!($(' li.ms-elem-selectable ').hasClass('ms-selected')))
+                {
+                    alertify.alert('<strong>Debe  seleccionar al menos un rol para el usuario.</strong>')
+                        .setHeader('<span class="glyphicon glyphicon-ban-circle" style="font-size: 20px"></span>' +
+                            '<h4 class="modal-title" style="display: inline-block; margin-left: 10px">Error</h4>')
+                        .set('label','Aceptar');
+                    return false;
+                }
+                var seleccionado = 0;
+                $(' li.ms-elem-selectable ').each(function(){
+
+                    if($(this).hasClass('ms-selected')){
+
+                        var texto = $(this).text();
+                        if(texto == 'ROLE_PROCESADOR' || texto == 'ROLE_SUPERVISOR')
+                        {
+                            seleccionado++;
+                        }
+
+                    }
+                });
+                if(seleccionado == 2)
+                {
+                    alertify.alert('<strong>El usuario no puede tener el rol de SUPERVISOR  y de PROCESADOR al mismo tiempo.</strong>')
+                        .setHeader('<span class="glyphicon glyphicon-ban-circle" style="font-size: 20px"></span>' +
+                            '<h4 class="modal-title" style="display: inline-block; margin-left: 10px">Error</h4>')
+                        .set('label','Aceptar');
+                    return false;
+                }
+
+                $(".preload").removeClass('hidden');
+
+                var mat_datos = {
+                    username: $("#username").val(),
+                    nombre: $("#nombre").val(),
+                    primerApellido: $("#primerApellido").val(),
+                    segundoApellido: $("#segundoApellido").val(),
+                    email: $("#email").val(),
+                    telefono: $("#telefono").val(),
+                    instancia: $("#instancia").val(),
+                    roles: $("#multi-roles").val(),
+                };
+
+                $.ajax({
+                    type: "POST",
+                    dataType: "html",
+                    url: '{{ path("insertUsuario") }}',
+                    data: mat_datos
+                }).done(function (data) {
+
+                    $(".preload").addClass('hidden');
+                    if(data == 'ok'){
+
+                        alertify.alert('<strong>El usuario ha sido insertado correctamente</strong>')
+                            .setHeader('<span class="glyphicon glyphicon-ok-circle" style="font-size: 20px"></span>' +
+                                '<h4 class="modal-title" style="display: inline-block; margin-left: 10px">Confirmacion</h4>')
+                            .set('label','Aceptar')
+                            .set('onok', function () {
+                                window.location.href = "{{ path('gestionarUsuarios') }}";
+                            });
+                    }else{
+                        alertify.alert('<strong>'+ data +'</strong>')
+                            .setHeader('<span class="glyphicon glyphicon-ban-circle" style="font-size: 20px"></span>' +
+                                '<h4 class="modal-title" style="display: inline-block; margin-left: 10px">Error</h4>')
+                            .set('label','Aceptar')
+                    }
+                });
+
+            });
+
+        });
+    </script>
+{% endblock %}

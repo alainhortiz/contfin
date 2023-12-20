@@ -1,0 +1,25 @@
+<div id="expedientesDuplicados"  data-backdrop="static" data-keyboard=false class="modal fade" role="dialog">
+    <div class="modal-dialog  portlet light estilosForm" style="width: 60vw">
+        <div class="portlet-title">
+            <div class="caption font-green">
+                <i class="icon-docs font-green"></i>
+                <span class="caption-subject bold uppercase">VERIFICAR POSIBLES DUPLICADOS</span>
+            </div>
+        </div>
+        <div class="portlet-body">
+            <div id="tablasExpedientesDuplicados"></div>
+            <div class="form-actions noborder" style="margin-top: 20px">
+                <button type="button" class="btn btn-secondary" id="btnGuardarExpediente">Guardar Expediente</button>
+                <button type="button" class="btn btn-secondary" id="btnEditarExpediente">Cargar Duplicado</button>
+                <button type="button" class="btn btn-secondary" id="btnSalirDuplicados">Cancelar</button>
+            </div>
+        </div>
+    </div>
+    <div class="hidden">
+        <form role="form" id="formIdExpedienteDuplicado" method="post" action="{{ path('editExpediente') }}">
+            <div class="form-body">
+                <input type="text" class="form-control" name="idExpedienteDuplicado" id="idExpedienteDuplicado">
+            </div>
+        </form>
+    </div>
+</div>
